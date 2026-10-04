@@ -9,6 +9,7 @@ export default defineConfig({
         index: "index.html",
         privacy: "privacy.html",
         support: "support.html",
+        terms: "terms.html",
         unsubscribe: "unsubscribe.html",
       },
     },

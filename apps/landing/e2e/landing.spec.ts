@@ -131,7 +131,7 @@ test("works at 320px width without horizontal scroll", async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
-for (const path of ["/", "/privacy.html", "/support.html", "/unsubscribe.html"]) {
+for (const path of ["/", "/privacy.html", "/support.html", "/unsubscribe.html", "/terms.html"]) {
   test(`axe: no serious or critical violations on ${path}`, async ({ page }) => {
     await page.goto(path);
     await page.waitForTimeout(150);
