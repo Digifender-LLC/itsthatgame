@@ -1,6 +1,6 @@
 # Software Design Document (SDD)
 
-**Status:** Current, draft-1 (2026-10-04). Nothing described here is implemented yet.
+**Status:** Current, draft-1 (2026-10-04). Implemented in PR #1 except the production, store, and device parts (see the [Roadmap status](../ROADMAP.md#5-milestones)).
 **Owns:** how the subsystems in the [HLD](HLD.md) collaborate, shared design patterns,
 interface responsibilities, and the mapping from requirements to design. Technology
 choices are in the [TDD](TDD.md); exact contracts and schemas in the [LLD](LLD.md).
@@ -63,8 +63,9 @@ flowchart TB
   a game is mounted; on error it destroys the game and shows the failure screen (WF-2).
 - Games are code-split: the shell imports a game module only when launched, which keeps
   cold start independent of library size (`NFR-1`).
-- Rendering engine is the game's choice behind the contract; the default template uses
-  Phaser ([TDD §2](TDD.md#2-technology-choices)).
+- Rendering engine is the game's choice behind the contract; the template and all launch
+  games use plain Canvas 2D with the SDK's canvas, loop, and pointer helpers
+  ([TDD §2](TDD.md#2-technology-choices), Roadmap D11).
 - Accessibility (`NFR-4`): the shell's own UI is semantic HTML with labels and scales
   with system font size; each game completes an accessibility checklist (color-safe
   palettes, no color-only cues, reduced motion) in M3.

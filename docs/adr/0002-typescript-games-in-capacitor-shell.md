@@ -39,3 +39,7 @@ The landing page and backend also use TypeScript.
 
 M2 measurements fall clearly short of `NFR-1`/`NFR-2` on the reference Android device,
 or a store rejects the app for being web-based.
+
+**Note (2026-10-04):** the decision stands. The default engine named above was not
+adopted: the launch games use plain Canvas 2D, which the contract always allowed
+([Roadmap D11](../ROADMAP.md#6-decisions-made-under-delegated-authority)).

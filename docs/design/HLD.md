@@ -1,6 +1,6 @@
 # High-Level Design (HLD)
 
-**Status:** Current, draft-1 (2026-10-04). Nothing described here is implemented yet.
+**Status:** Current, draft-1 (2026-10-04). Implemented in PR #1 except the production, store, and device parts (see the [Roadmap status](../ROADMAP.md#5-milestones)).
 **Owns:** system boundaries, major components and their responsibilities, trust
 boundaries, external integrations, deployment topology, and major data flows. How
 components collaborate internally is in the [SDD](SDD.md); technology specifics in the

@@ -10,9 +10,10 @@ interfaces are detailed in the [LLD](../design/LLD.md).
 [Roadmap](../ROADMAP.md#5-milestones). *Verification*: method (T = automated test,
 I = inspection, D = demonstration, A = analysis/measurement) and the planned check.
 
-**Verification status:** as of 2026-10-04, no requirement is implemented and no test
-exists. All verification below is *planned*. When a test is written, add its path in
-the Verification cell.
+**Verification status:** as of 2026-10-04, the automated checks listed in
+[§6](#6-verification-evidence) exist and pass in PR #1. Checks that need production,
+real stores, or devices (Roadmap P1–P4) are still *planned*. When a test is written, add
+its path to §6.
 
 **Targets vs. constraints.** Numbers marked `[Proposal]` are proposed targets, not
 established commitments. They can be changed by the owner or by evidence (e.g. M2
@@ -118,3 +119,25 @@ measurements) without an ADR.
 | `IF-4` | RevenueCat client SDK and store purchase APIs | Must | M4 | [ADR-0005](../adr/0005-store-iap-via-revenuecat.md), [SDD §4](../design/SDD.md#4-entitlement) |
 | `IF-5` | Game module contract (internal TypeScript interface) | Must | M2 | [LLD §1](../design/LLD.md#1-game-sdk-contract-if-5) |
 | `IF-6` | Admin HTTP API (operator) | Must | M1, M5 | [LLD §7](../design/LLD.md#7-admin-api-if-6) |
+
+## 6. Verification evidence
+
+Automated checks that exist as of 2026-10-04 (PR #1). Paths are relative to the repository
+root. Requirements not listed have only planned verification, mostly on devices, stores, or
+production (see the Roadmap status table).
+
+| Requirements | Evidence |
+|---|---|
+| `FR-WL-1`, `FR-WL-4`, `NFR-4` (landing), `NFR-8` | `apps/landing/e2e/landing.spec.ts` (signup body with UTM, 320 px layout, axe on every page) |
+| `FR-WL-2`, `FR-WL-3`, `SEC-4`, `SEC-5`, `DATA-1` | `services/api/test/waitlist.test.ts` |
+| `FR-WL-5`, `FR-WL-6`, `SEC-3`, `IF-6` | `services/api/test/admin.test.ts`, `services/api/test/waitlist.test.ts` (unsubscribe) |
+| `SEC-6` | `services/api/test/worker.test.ts` (CORS, HSTS, unknown routes) |
+| `SEC-1` | `scripts/check_deps.mjs`, `scripts/check_deps.test.mjs`; ESLint bans network and platform APIs in `games/*` |
+| `FR-APP-1`, `FR-APP-2`, `FR-APP-5` | `apps/shell/src/catalog.test.ts`, `apps/shell/src/screens/Library.test.tsx`, `apps/shell/e2e/shell.spec.ts` |
+| `FR-APP-3`, `FR-APP-4`, `FR-APP-6`, `DATA-4` | `apps/shell/src/services/prefs.test.ts`, `apps/shell/src/host/gameHost.test.ts`, per-game progress tests in `games/*/src/*.test.ts` |
+| `FR-GAME-1`, `IF-5` | `packages/game-sdk/src/index.test.ts`; `describeConformance` in every `games/*` test suite |
+| `FR-GAME-2` | `scripts/check_catalog.mjs` (originality, QA, assets files required for releasable games) |
+| `FR-ENT-1`…`FR-ENT-6`, `IF-4` (client side) | `apps/shell/src/services/entitlementMachine.test.ts`, `apps/shell/src/services/entitlement.test.ts`, `apps/shell/e2e/shell.spec.ts` (paywall, dev-adapter purchase) |
+| `FR-SUB-1`…`FR-SUB-6`, `IF-2`, `DATA-2` | `services/api/test/submissions.test.ts`, `services/api/test/admin.test.ts`, `apps/shell/src/services/outbox.test.ts`, `apps/shell/e2e/shell.spec.ts` (offline request delivered once) |
+| `FR-AN-1`, `FR-AN-2`, `IF-3` | `services/api/test/events.test.ts`, `apps/shell/src/services/analytics.test.ts` |
+| `NFR-3` | `scripts/check_bundle_size.mjs` in CI (2026-10-04: 250.9 KB total, 44.5 KB initial JS gzip) |

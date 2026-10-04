@@ -74,7 +74,7 @@ Performed 2026-10-04 against `github.com/Digifender-LLC/itsthatgame`.
 | The analysis is advice, not an owner decision. Its pricing, free-tier, and validate-first suggestions were inputs; the resulting choices were made under delegated authority and are recorded in [§6](#6-decisions-made-under-delegated-authority). | Owner instruction of 2026-10-04 granting final authority (project thread) |
 | No external systems (stores, Cloudflare, RevenueCat, domains, social accounts) were inspected. Nothing about their state is assumed beyond what is labeled `[Assumption]`. | — |
 
-**Current state:** documentation only (this PR). **Target state:** a released iOS/Android
+**State at audit:** documentation only. **Current state (2026-10-04):** everything up to the owner-held prerequisites is built; see the [§5 status table](#5-milestones). **Target state:** a released iOS/Android
 app with a free tier and paid full-library unlock, a regular cadence of new original
 games, a working submission channel, and a low-cost backend, preceded by evidence of paid
 demand.
@@ -169,15 +169,23 @@ flowchart LR
 
 | ID | Milestone | Status | Depends on |
 |---|---|---|---|
-| M0 | Documentation baseline | Partial: written in this PR; `Done` when merged | — |
-| M1 | Demand validation | Planned (**next**) | M0 |
-| M2 | Game runtime prototype | Planned (may run in parallel with M1) | M0 |
-| G1 | Demand go/no-go | Planned (decision gate, rules in D2) | M1 |
-| M3 | Launch library and content pipeline | Planned | M2, G1 |
-| M4 | Monetization | Planned | M2, G1 |
-| M5 | Submissions | Planned | M1 (backend foundation), G1 |
-| M6 | Launch readiness and release | Planned | M3, M4, M5 |
-| M7 | Post-launch content cadence | Planned (high-level) | M6 |
+Status as of 2026-10-04. "Built" means the code and its automated checks are in PR #1
+and pass locally and in CI; nothing is `Done` until PR #1 merges (agents.md rule 2).
+"Blocked (Pn)" means the remaining step needs an owner-held prerequisite (§6); its
+runbook is in [`docs/runbooks/`](runbooks/README.md). Build order deviates from the
+dependency graph per D12.
+
+| ID | Milestone | Status | Depends on |
+|---|---|---|---|
+| M0 | Documentation baseline | Built; `Done` when PR #1 merges | — |
+| M1 | Demand validation | T1–T4 built; T5 **Blocked (P1)**; T6 waits on T5 | M0 |
+| M2 | Game runtime prototype | T1–T4 built; T5 **Blocked (P4)** for device checks | M0 |
+| G1 | Demand go/no-go | Waiting on M1-T6 readout | M1 |
+| M3 | Launch library and content pipeline | Built (8 games, 3 free); device QA **Blocked (P4)** | M2, G1 |
+| M4 | Monetization | Client built; sandbox purchases **Blocked (P2, P3)** | M2, G1 |
+| M5 | Submissions | Built; production **Blocked (P1)** | M1 (backend foundation), G1 |
+| M6 | Launch readiness and release | Analytics, legal drafts, release checklist built; release **Blocked (P1–P4)** | M3, M4, M5 |
+| M7 | Post-launch content cadence | Process documented; starts after M6 | M6 |
 
 ### M0 Documentation baseline
 
@@ -185,6 +193,7 @@ flowchart LR
 - **Acceptance:** all files in [§4](#4-documentation-map) exist; `python3 scripts/check_docs.py`
   passes; every must-have SRS requirement maps to a milestone below.
 - **Verification:** run the script (done 2026-10-04, passed; see PR #1); M0 is `Done` when PR #1 merges.
+- **Status:** Built. `check_docs.py` runs in CI (`.github/workflows/ci.yml`).
 
 ### M1 Demand validation
 
@@ -215,6 +224,17 @@ flowchart LR
 | M1-T4 | Owner stats and deletion: `GET /admin/v1/waitlist/stats`, `GET /admin/v1/waitlist/export.csv`, `POST /v1/waitlist/unsubscribe`, behind Cloudflare Access for `/admin/*` | `FR-WL-5`, `FR-WL-6`, `SEC-3`, `IF-6` | M1-T3 | Tests: admin routes reject requests without the Access JWT; unsubscribe deletes the row; stats counts match fixtures |
 | M1-T5 | Deploy: `wrangler` environments `preview` and `production`, D1 databases, secrets, Access policy, on Cloudflare-provided subdomains (D5) | [TDD §7](design/TDD.md#7-environments-configuration-and-release) | M1-T2…T4 | **Prerequisite P1** (Cloudflare account credentials in the agent environment). Done when acceptance items 1–3 pass in production |
 | M1-T6 | Validation readout: collect signups for 4 weeks; produce the G1 readout (signups, source mix, price preference, video views → visits → signups) | [BRD §7](requirements/BRD.md#7-success-measures) | M1-T5 | Readout committed under `docs/validation/`; G1 outcome applied per D2 and recorded in this file |
+
+**Status and evidence (M1):**
+
+| Task | Status | Evidence |
+|---|---|---|
+| M1-T1 | Built | Root `package.json`, `pnpm-workspace.yaml`, `eslint.config.js`, `.github/workflows/ci.yml` (deps guard, docs, lint, format, typecheck, test, build, catalog, bundle size, E2E, gitleaks); denylist guard `scripts/check_deps.mjs` with `scripts/check_deps.test.mjs` proving a denylisted package fails |
+| M1-T2 | Built | `apps/landing/` (index, privacy, terms, support, unsubscribe pages); `apps/landing/src/lib.test.ts`; `apps/landing/e2e/landing.spec.ts` (form success, errors, UTM, axe checks). Lighthouse report deferred to the production URL (T5) |
+| M1-T3 | Built | `services/api/src/routes/waitlist.ts`, `migrations/0001_init.sql`; `services/api/test/waitlist.test.ts` covers valid, duplicate, invalid email, missing consent, failed Turnstile, rate-limited |
+| M1-T4 | Built | `services/api/src/routes/admin.ts`, `src/auth.ts`; `services/api/test/admin.test.ts` (no JWT rejected, stats match fixtures, CSV export), unsubscribe tests in `waitlist.test.ts` |
+| M1-T5 | **Blocked (P1)** | Config ready: `services/api/wrangler.toml` (placeholders), `.github/workflows/deploy.yml` (manual). Steps: [runbooks/cloudflare-deploy.md](runbooks/cloudflare-deploy.md) |
+| M1-T6 | Waiting on T5 | Campaign plan [runbooks/validation-campaign.md](runbooks/validation-campaign.md); readout template [validation/readout-template.md](validation/readout-template.md) |
 
 Non-engineering work in M1 (owner-led, not tracked as tasks): producing short "we made
 the game from the ad" videos, optionally using M2 prototype footage.
@@ -248,6 +268,16 @@ the game from the ad" videos, optionally using M2 prototype footage.
 | M2-T4 | Game prototype B: a pull-the-pin physics puzzle (original art and name) | as M2-T3 | M2-T1 | as M2-T3 |
 | M2-T5 | Offline, lifecycle, and performance check on simulators and one physical Android device | `FR-APP-3`, `NFR-1`, `NFR-2`, `NFR-5` | M2-T2…T4 | Checklist in [TDD §5](design/TDD.md#5-testing-strategy) completed and attached to the PR. iOS part **requires a Mac or macOS CI runner** (assumption above) |
 
+**Status and evidence (M2):**
+
+| Task | Status | Evidence |
+|---|---|---|
+| M2-T1 | Built | `packages/game-sdk/src/index.ts`, conformance suite `src/conformance.ts`, tests `src/index.test.ts` (lifecycle ordering, storage scoping) |
+| M2-T2 | Built | `apps/shell/` (Preact + Vite + Capacitor 8 config `capacitor.config.ts`); `src/catalog.test.ts`, `src/screens/Library.test.tsx`, `src/host/gameHost.test.ts`, `src/services/prefs.test.ts`; `e2e/shell.spec.ts` (library renders, launch and exit). Native `ios/` and `android/` folders are generated by `cap add` per [runbooks/mobile-builds.md](runbooks/mobile-builds.md), not committed |
+| M2-T3 | Built | `games/ring-sort/` (24 solver-checked levels, conformance and persistence tests) |
+| M2-T4 | Built | `games/pin-drop/` (24 levels, conformance and persistence tests) |
+| M2-T5 | **Blocked (P4)** | Web-build offline and lifecycle checks pass in `apps/shell/e2e/shell.spec.ts`; simulator, emulator and device checklist in [runbooks/mobile-builds.md](runbooks/mobile-builds.md) |
+
 The two genres are `[Proposal]`: they are among the most common "ad game" formats named
 in the shared analysis and are mechanically simple.
 
@@ -259,7 +289,9 @@ in the shared analysis and are mechanically simple.
 - **Outcomes:** *Go* (proceed to M3–M5 with the D1 pricing, adjusted per D2), *Iterate*
   (one rerun of M1-T6 with changed positioning, e.g. offline or ad-free-for-families
   angles), or *Stop* (pause build work; report to the owner).
-- **Status:** Planned. Record the outcome, date, readout link, and rationale here.
+- **Status:** Waiting on the M1-T6 readout, which needs M1-T5 (P1). Record the outcome,
+  date, readout link, and rationale here. Per D12, M3–M5 were built before G1; G1 still
+  gates launch spending (store fees, paid marketing, M6 release).
 
 ### M3 Launch library and content pipeline
 
@@ -273,6 +305,12 @@ in the shared analysis and are mechanically simple.
 - **Tasks (higher-level):** game template generator; originality checklist and review
   step (`RULE-9`); per-game QA checklist; build out remaining games; app size budget
   check in CI.
+- **Status:** Built, except device QA. Evidence: `games/_template/` (scaffold that passes
+  the conformance suite), 8 games in `apps/shell/src/catalog.json` (free: `ring-sort`,
+  `pin-drop`, `tile-trio`; premium: `stack-up`, `park-out`, `merge-drop`, `paint-path`,
+  `untangle`), each with `ORIGINALITY.md`, `QA.md`, `ASSETS.md` and tests;
+  `scripts/check_catalog.mjs` enforces `RULE-9`; `scripts/check_bundle_size.mjs` enforces
+  `NFR-3`; both run in CI. Device QA rows in each `QA.md` are **Blocked (P4)**.
 
 ### M4 Monetization
 
@@ -285,6 +323,12 @@ in the shared analysis and are mechanically simple.
   entitled install keeps access for the grace period (`RULE-4`); a lapsed subscription
   relocks premium games without losing progress.
 - **Prerequisites:** G1 *Go*; prices per D1/D2; P2 (store accounts) and P3 (RevenueCat project).
+- **Status:** Client built; sandbox verification **Blocked (P2, P3)**. Evidence:
+  `apps/shell/src/services/entitlementMachine.ts` and `entitlement.ts` (offline grace,
+  lapse relock) with `entitlementMachine.test.ts`, `entitlement.test.ts`;
+  `purchases.ts` (RevenueCat adapter, dev adapter for web); `screens/Paywall.tsx`;
+  paywall and dev-adapter purchase flows in `e2e/shell.spec.ts`. Products and steps:
+  [runbooks/stores-and-revenuecat.md](runbooks/stores-and-revenuecat.md).
 
 ### M5 Submissions
 
@@ -297,6 +341,11 @@ in the shared analysis and are mechanically simple.
 - **Acceptance:** a submission made offline is delivered once when connectivity returns;
   the owner can list and change status through the admin API; the submitter's device
   shows the updated status; rate limits enforced.
+- **Status:** Built; production **Blocked (P1)**. Evidence:
+  `services/api/src/routes/submissions.ts`, `routes/admin.ts`, `migrations/0002_submissions.sql`,
+  `test/submissions.test.ts` (idempotent replay, rate limits, status reads, transitions);
+  `apps/shell/src/services/outbox.ts` with `outbox.test.ts` (offline queue, single
+  delivery, backoff); `screens/RequestGame.tsx`, `screens/MyRequests.tsx`.
 
 ### M6 Launch readiness and release
 
@@ -311,6 +360,13 @@ in the shared analysis and are mechanically simple.
   (D5); listing copy consistent with D3.
 - **Prerequisites:** P2 (store accounts under the publisher in D4); P4 (macOS build
   capability).
+- **Status:** Built up to release; release **Blocked (P1–P4)**. Evidence: analytics
+  ingest `services/api/src/routes/events.ts` with `test/events.test.ts`; client
+  `apps/shell/src/services/analytics.ts` with `analytics.test.ts` (opt-out discards
+  queue); draft privacy policy and terms in `apps/landing/privacy.html` and
+  `terms.html` (need legal review before publishing); [release-checklist.md](release-checklist.md).
+  Trademark knockout (D7): a preliminary web and app-store search on 2026-10-04 found no
+  app named "ItsThatGame"; the USPTO search is still to do before listings.
 
 ### M7 Post-launch content cadence
 
@@ -318,6 +374,8 @@ in the shared analysis and are mechanically simple.
   cadence target: 2 new games per month (D8); no public cadence promise until that is
   met for 3 consecutive months. Each release follows the M3 pipeline and M6 release
   checklist. Detail to be planned after launch data exists.
+- **Status:** Process documented in [process/content-cadence.md](process/content-cadence.md);
+  starts after M6.
 
 ### Deferred
 
@@ -351,6 +409,9 @@ architectural) with the reason.
 | D7 | **Name.** Keep "ItsThatGame" as the product name; run a trademark knockout search before M6 listings and rename if a conflict is found. | Repository name and pitch hook ("it's that game from the ad"). | Search finds a conflict. |
 | D8 | **Cadence.** Internal target of 2 new games per month after launch; no public promise until met for 3 consecutive months. | Retention needs new content; a public promise missed early would hurt trust. | Actual throughput after 3 months. |
 | D9 | **Offline grace.** 7 days beyond cached subscription expiry (`RULE-4`). | Covers a week of travel without making cancellation free for long. | Abuse or support data. |
+| D10 | **One PR.** All milestones were built on the single branch the environment allows (`claude/agents-md-and-roadmap-docs-zuv158`, PR #1) instead of one PR per task. Commits name task IDs. | The agent may push only that branch. | When more branches are allowed; later work goes one task per PR (agents.md). |
+| D11 | **Games use plain Canvas 2D, not Phaser.** The SDK provides canvas, loop, and input helpers. | The 8 launch games are simple 2D puzzles; Canvas keeps each game small (whole app 251 KB) and avoids a 1 MB engine. Not a new runtime dependency, so no ADR. | A game needs physics or a scene graph that the helpers can't reasonably provide. |
+| D12 | **Built ahead of G1.** On 2026-10-04 the owner set the goal "complete the roadmap completely", so M3–M5 were built before the G1 readout. G1 still decides launch spending (store fees, marketing, M6 release). | Owner goal; code is cheap to keep and does not commit money. | G1 *Stop*: keep the code, do not release. |
 
 **Conflicts found:** one, the price point: the pitch ($5/month) versus the shared
 analysis. Resolved by D1 (lower launch price, $4.99 measured as a test arm) and D2.
@@ -385,8 +446,15 @@ Work that needs them is marked with the ID; everything else proceeds without the
 
 ## 8. Next actionable milestone
 
-**M1 Demand validation**, starting with **M1-T1** (monorepo bootstrap), which has no
-prerequisites. M1-T2 to M1-T4 can then proceed locally against Wrangler's local D1.
-**M1-T5 needs prerequisite P1** (Cloudflare credentials); no domain is needed (D5) and
-the privacy notice names Digifender LLC (D4). M1 is complete when the four
-M1 acceptance items pass in production; M2 may proceed in parallel at any time.
+Everything that can be built without the owner's accounts is built (see the status table
+in §5). The next steps, in order:
+
+1. **Merge PR #1** (makes M0 `Done` and moves the built items to `Done` with the
+   evidence listed above).
+2. **P1, Cloudflare:** follow [runbooks/cloudflare-deploy.md](runbooks/cloudflare-deploy.md)
+   to finish M1-T5, then start the 4-week campaign (M1-T6) and apply G1.
+3. **P4, macOS and devices:** finish M2-T5 and the per-game device QA
+   ([runbooks/mobile-builds.md](runbooks/mobile-builds.md)).
+4. **After G1 *Go*, P2 and P3:** store accounts and RevenueCat
+   ([runbooks/stores-and-revenuecat.md](runbooks/stores-and-revenuecat.md)), then the M6
+   [release checklist](release-checklist.md).

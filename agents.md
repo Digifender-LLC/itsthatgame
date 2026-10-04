@@ -6,11 +6,14 @@ authoritative agent instruction file. Do not create `AGENTS.md` or other case va
 
 ## Project in one paragraph
 
-ItsThatGame is a planned ad-free collection of original hypercasual mobile games
-("we built the game from the ad"), with a player submission channel for games people
-have seen in ads, plus a small supporting backend. As of 2026-10-04 the repository
-contains documentation only: no application code, backend, tests, or infrastructure
-exist yet. Do not describe anything as implemented unless the code is in this repository.
+ItsThatGame is an ad-free collection of original hypercasual mobile games ("we built
+the game from the ad"), with a player submission channel for games people have seen in
+ads, plus a small supporting backend. As of 2026-10-04 the repository contains the
+landing page, the Cloudflare Worker API, the Capacitor app shell, the game SDK, and 8
+games, all with tests and CI. Nothing is deployed and nothing is in the stores yet: those
+steps wait on owner-held accounts (Roadmap §6, P1–P4) and have runbooks in
+`docs/runbooks/`. Do not describe anything as implemented unless the code is in this
+repository, or as live unless it has been deployed and checked.
 
 ## Start here: the canonical roadmap
 
@@ -141,10 +144,15 @@ serialize tasks that edit the same files.
 
 ## Repository layout
 
-Current: `docs/` (specifications), `scripts/check_docs.py` (doc validation), this file.
-Planned layout (not yet created) is defined in
-[TDD §3](docs/design/TDD.md#3-repository-layout). Create directories as the roadmap
-tasks that need them are implemented, not before.
+See [TDD §3](docs/design/TDD.md#3-repository-layout): `apps/landing`, `apps/shell`,
+`packages/contracts`, `packages/game-sdk`, `services/api`, `games/<slug>` (start new games
+from `games/_template`), `scripts/`, `docs/`. pnpm workspace; Node 22+ and pnpm 10.
+
+Before pushing, run `pnpm check` (deps guard, docs check, lint, format, typecheck, unit
+tests), then `pnpm build` and `pnpm test:e2e` if you touched an app. CI runs the same
+steps plus the catalog and bundle-size checks and a secret scan. Games must not use the
+network, `localStorage`, or platform plugins; use the SDK's storage and helpers (ESLint
+enforces this).
 
 ## Commits and pull requests
 

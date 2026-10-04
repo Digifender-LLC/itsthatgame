@@ -1,7 +1,9 @@
 # Low-Level Design (LLD)
 
-**Status:** Current for the interfaces needed by M1, M2, and M5 (2026-10-04). Nothing
-here is implemented yet. **Owns:** module contracts, API contracts, schemas, state
+**Status:** Current for the interfaces needed by M1, M2, and M5 (2026-10-04).
+Implemented in PR #1; the executable schemas are in `packages/contracts`. Where the code
+differs from draft-1 of this document, the text below has been updated and the change
+is marked *(as built)*. **Owns:** module contracts, API contracts, schemas, state
 machines, error handling, retries, idempotency, and concurrency behavior. Detail is
 given only where a near-term roadmap task needs it; M4 entitlement internals follow
 RevenueCat's SDK and are specified in [SDD §4](SDD.md#4-entitlement).
@@ -99,9 +101,12 @@ Headers: `Idempotency-Key: <clientId UUIDv4>`.
 { "description": "Tower of colored rings you drop to sort...", "link": "https://...", "seenIn": "Some puzzle app" }
 ```
 
-Validation per `RULE-7`. Processing: rate limit (`RULE-8`) → `INSERT … ON
-CONFLICT(client_id) DO NOTHING` → select row by `client_id`. If the existing row's
-`install_hash` differs from the caller's, respond `409`.
+Validation per `RULE-7`. Processing *(as built)*: look up `client_id` first; an existing
+row from the same install is returned as a replay (`200`) without consuming rate-limit
+budget, so outbox retries never trip `RULE-8`. Otherwise: rate limit (`RULE-8`) →
+`INSERT … ON CONFLICT(client_id) DO NOTHING` → select row by `client_id`. If the row's
+`install_hash` differs from the caller's, respond `409`. The app headers are required;
+a missing or invalid `X-Install-Id` is `400`.
 
 Responses: `201 {"id": "<serverId>", "status": "received", "createdAt": "..."}` on first
 insert; `200` with the same body on idempotent replay; `400`, `409`, `429`, `500`.
@@ -123,7 +128,8 @@ Allowed event names (`FR-AN-1`): `app_open`, `game_start`, `game_complete_level`
 `restore_success`, `submission_sent`. Unknown names are dropped and counted.
 
 Data point written: blobs `[name, gameSlug|"", platform, appVersion]`, double `[1]`,
-index `name`. Responses: `202`; `400` on malformed batch; `429`.
+index `name`. Responses: `202 {"accepted": n, "dropped": m}` *(as built)*; `400` on
+malformed batch; `429`.
 
 ## 4. Catalog manifest
 
@@ -139,7 +145,7 @@ index `name`. Responses: `202`; `400` on malformed batch; `429`.
       "tier": "free",
       "addedInVersion": "1.0.0",
       "releasable": true,
-      "icon": "games/ring-sort/icon.png",
+      "icon": "drawn:ring-sort",
       "module": "ring-sort"
     }
   ]
@@ -149,7 +155,10 @@ index `name`. Responses: `202`; `400` on malformed batch; `429`.
 Rules: `slug` is unique, `^[a-z0-9-]{3,40}$`; `tier` is `free|premium` (`RULE-1`);
 `addedInVersion` is semver; only `releasable: true` entries are shown in release builds
 (`RULE-9`); "New" is shown when `major.minor(addedInVersion) == major.minor(appVersion)`
-and the local key `seen:<slug>` is unset (`RULE-12`). Titles above are placeholders.
+and the local key `seen:<slug>` is unset (`RULE-12`). *(As built)* `icon: "drawn:<slug>"`
+means the shell draws the icon in code (no image files); a path is still allowed for
+future games. The startup validator is hand-written rather than Zod, to keep Zod out of
+the shell's initial bundle.
 
 ## 5. D1 schema
 
@@ -213,14 +222,18 @@ Allowed transitions (`RULE-10`, `FR-SUB-4`), implemented as a lookup table:
 | `shipped` | — |
 
 Updates use optimistic concurrency: `UPDATE submissions SET status=?, public_note=?,
-updated_at=? WHERE id=? AND status=?` (expected current status). Zero rows changed →
-`409` with the current status.
+updated_at=? WHERE id=? AND status=?` (expected current status). *(As built)* A `from →
+to` pair not in the table is `400 validation_failed`; a valid pair whose `from` no
+longer matches the stored status is `409 conflict` with `currentStatus` in the error
+envelope. An empty `publicNote` clears the note.
 
 ## 7. Admin API (`IF-6`)
 
 All routes under `/admin/v1/`, behind Cloudflare Access; the Worker also verifies the
 `Cf-Access-Jwt-Assertion` JWT (issuer, audience `ACCESS_AUD`, signature via the team's
-JWKS, email in `OPERATOR_EMAILS`) and returns `401`/`403` otherwise (`SEC-3`).
+JWKS, email in `OPERATOR_EMAILS`) and returns `401`/`403` otherwise (`SEC-3`). Unknown
+paths under `/admin/` also return `401` before routing, so they do not reveal which
+routes exist *(as built)*.
 
 | Route | Purpose | Req |
 |---|---|---|
@@ -238,6 +251,7 @@ JWKS, email in `OPERATOR_EMAILS`) and returns `401`/`403` otherwise (`SEC-3`).
 { "error": { "code": "validation_failed", "message": "Human-readable text", "fields": { "email": "invalid" }, "requestId": "..." } }
 ```
 
+Oversized bodies are rejected as `validation_failed` (400) rather than 413 *(as built)*.
 Codes: `validation_failed` (400), `bot_check_failed` (403), `unauthorized` (401),
 `forbidden` (403), `not_found` (404), `conflict` (409), `rate_limited` (429, with
 `Retry-After`), `internal` (500).
@@ -245,7 +259,8 @@ Codes: `validation_failed` (400), `bot_check_failed` (403), `unauthorized` (401)
 **Rate limiting:** fixed windows in `rate_limits` via a single `INSERT … ON CONFLICT DO
 UPDATE SET count = count + 1 RETURNING count` statement, which is atomic in D1; reject
 when the returned count exceeds the limit. Limits: waitlist 10/IP-hash/hour; submissions
-5/install/24h and 20/IP-hash/24h (`RULE-8`); events 60 batches/install/hour.
+5/install/24h and 20/IP-hash/24h (`RULE-8`); events 60 batches/install/hour. Waitlist
+unsubscribe shares the waitlist limit *(as built)*.
 
 **Idempotency:** waitlist by unique normalized email; submissions by unique `client_id`
 (retries return the original row). Analytics is not idempotent (duplicates acceptable).
@@ -254,7 +269,10 @@ when the returned count exceeds the limit. Limits: waitlist 10/IP-hash/hour; sub
 backoff starting at 30 s, doubling to a 6 h cap, honoring `Retry-After`; give up after
 14 days `[Proposal]` and show the item as "Couldn't send". On `400`/`409`: mark `failed`
 immediately with the server message. Only one delivery loop runs at a time (in-memory
-lock), so an item is never sent concurrently by the same app process.
+lock), so an item is never sent concurrently by the same app process. *(As built)* Each
+item stores `clientId`, `payload`, `attempts`, `nextAttemptAt`, `state`, `createdAt`,
+and the last error, server ID, status, and public note; when the device comes back
+online, items waiting after a network failure become due immediately.
 
 **Turnstile failures** are not retried automatically; the web form asks the visitor to
 try again.
