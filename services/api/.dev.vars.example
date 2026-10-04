@@ -1,0 +1,5 @@
+# Copy to .dev.vars for `pnpm --filter @itg/api dev`. Never commit .dev.vars (SEC-2).
+# Cloudflare's documented always-pass Turnstile test secret; real secrets go in `wrangler secret put`.
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+ACCESS_AUD=local-dev-audience
+HASH_PEPPER=local-dev-pepper-change-me

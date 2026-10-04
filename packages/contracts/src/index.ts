@@ -21,6 +21,8 @@ export interface ErrorEnvelope {
     code: ErrorCode;
     message: string;
     fields?: Record<string, string>;
+    /** Only on 409 from PATCH /admin/v1/submissions/:id (LLD §6): the row's actual status. */
+    currentStatus?: SubmissionStatus;
     requestId: string;
   };
 }

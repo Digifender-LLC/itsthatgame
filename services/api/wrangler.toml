@@ -1,0 +1,87 @@
+# ItsThatGame API Worker (HLD §4, TDD §7).
+# Secrets are NOT configured here (SEC-2). Set them per environment with
+#   wrangler secret put TURNSTILE_SECRET --env <preview|production>
+#   wrangler secret put ACCESS_AUD       --env <preview|production>
+#   wrangler secret put HASH_PEPPER      --env <preview|production>
+# For local dev copy .dev.vars.example to .dev.vars (git-ignored).
+#
+# Wrangler environments do not inherit bindings or vars, so each [env.*] repeats them.
+
+name = "itsthatgame-api"
+main = "src/index.ts"
+compatibility_date = "2026-08-15"
+workers_dev = true
+
+# ---- local (wrangler dev) ---------------------------------------------------
+
+[vars]
+ALLOWED_ORIGIN = "http://localhost:5173,http://localhost:4173"
+APP_ORIGINS = "capacitor://localhost,https://localhost,http://localhost:5174,http://localhost:4174"
+OPERATOR_EMAILS = "operator@example.com"
+ACCESS_TEAM_DOMAIN = "example.cloudflareaccess.com"
+# ISO date after which the cron deletes all waitlist entries (DATA-1: 12 months after G1).
+# Empty until the G1 decision date is known.
+WAITLIST_RETENTION_END = ""
+
+[[d1_databases]]
+binding = "DB"
+database_name = "itsthatgame-local"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[[analytics_engine_datasets]]
+binding = "EVENTS"
+dataset = "itsthatgame_events"
+
+[triggers]
+crons = ["17 3 * * *"]
+
+# ---- preview ----------------------------------------------------------------
+
+[env.preview]
+name = "itsthatgame-api-preview"
+
+[env.preview.vars]
+ALLOWED_ORIGIN = "https://REPLACE_WITH_PREVIEW_LANDING_ORIGIN"
+APP_ORIGINS = "capacitor://localhost,https://localhost"
+OPERATOR_EMAILS = "REPLACE_WITH_OPERATOR_EMAIL"
+ACCESS_TEAM_DOMAIN = "REPLACE_WITH_TEAM.cloudflareaccess.com"
+WAITLIST_RETENTION_END = ""
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "itsthatgame-preview"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[[env.preview.analytics_engine_datasets]]
+binding = "EVENTS"
+dataset = "itsthatgame_events_preview"
+
+[env.preview.triggers]
+crons = ["17 3 * * *"]
+
+# ---- production -------------------------------------------------------------
+
+[env.production]
+name = "itsthatgame-api-production"
+
+[env.production.vars]
+ALLOWED_ORIGIN = "https://REPLACE_WITH_LANDING_ORIGIN"
+APP_ORIGINS = "capacitor://localhost,https://localhost"
+OPERATOR_EMAILS = "REPLACE_WITH_OPERATOR_EMAIL"
+ACCESS_TEAM_DOMAIN = "REPLACE_WITH_TEAM.cloudflareaccess.com"
+WAITLIST_RETENTION_END = ""
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "itsthatgame-production"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[[env.production.analytics_engine_datasets]]
+binding = "EVENTS"
+dataset = "itsthatgame_events"
+
+[env.production.triggers]
+crons = ["17 3 * * *"]
