@@ -1,0 +1,44 @@
+{
+  "name": "@itg/shell",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "cap:sync": "cap sync"
+  },
+  "dependencies": {
+    "@itg/contracts": "workspace:*",
+    "@itg/game-sdk": "workspace:*",
+    "preact": "^10.27.0",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/network": "^8.0.1",
+    "@revenuecat/purchases-capacitor": "^13.7.0",
+    "@itg/game-ring-sort": "workspace:*",
+    "@itg/game-pin-drop": "workspace:*",
+    "@itg/game-tile-trio": "workspace:*",
+    "@itg/game-stack-up": "workspace:*",
+    "@itg/game-park-out": "workspace:*",
+    "@itg/game-merge-drop": "workspace:*",
+    "@itg/game-paint-path": "workspace:*",
+    "@itg/game-untangle": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^8.0.0",
+    "@preact/preset-vite": "^2.10.6",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "@playwright/test": "1.56.1",
+    "@axe-core/playwright": "^4.13.0",
+    "happy-dom": "^20.14.5",
+    "@testing-library/preact": "^3.2.4"
+  }
+}
