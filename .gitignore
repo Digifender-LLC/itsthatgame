@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.wrangler/
+.dev.vars
+.env
+.env.*
+*.log
+playwright-report/
+test-results/
+.DS_Store
+apps/shell/android/
+apps/shell/ios/
+!.env.example

@@ -1,0 +1,46 @@
+# Manual deploy of the API Worker and landing page (docs/runbooks/cloudflare-deploy.md).
+# Requires secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID and repository variables
+# API_BASE_PREVIEW, API_BASE_PRODUCTION, TURNSTILE_SITE_KEY (prerequisite P1).
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [preview, production]
+        default: preview
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply D1 migrations
+        run: pnpm --filter @itg/api exec wrangler d1 migrations apply DB --env ${{ inputs.environment }} --remote
+      - name: Deploy API Worker
+        run: pnpm --filter @itg/api exec wrangler deploy --env ${{ inputs.environment }}
+      - name: Build landing page
+        run: pnpm --filter @itg/landing build
+        env:
+          VITE_API_BASE: ${{ inputs.environment == 'production' && vars.API_BASE_PRODUCTION || vars.API_BASE_PREVIEW }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+      - name: Deploy landing page
+        run: >
+          pnpm --filter @itg/api exec wrangler pages deploy ../../apps/landing/dist
+          --project-name itsthatgame-landing
+          --branch ${{ inputs.environment == 'production' && 'main' || 'preview' }}

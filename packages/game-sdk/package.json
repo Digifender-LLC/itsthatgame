@@ -1,0 +1,17 @@
+{
+  "name": "@itg/game-sdk",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./conformance": "./src/conformance.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.14.5"
+  }
+}

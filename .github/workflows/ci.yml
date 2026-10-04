@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pnpm install --frozen-lockfile
+      - name: Ad/tracking dependency guard (SEC-1)
+        run: pnpm deps:check
+      - name: Docs check
+        run: pnpm docs:check
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Catalog and bundle-size checks (FR-GAME-2, NFR-3)
+        run: node scripts/check_catalog.mjs && node scripts/check_bundle_size.mjs
+      - name: Install Playwright browser
+        run: pnpm --filter @itg/shell exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # The gitleaks GitHub Action needs a paid license for organization repos; the
+      # gitleaks CLI itself is MIT-licensed, so run it directly.
+      - name: Secret scan (SEC-2)
+        run: >
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:latest
+          git /repo --redact --verbose
