@@ -35,7 +35,9 @@ const initialGzip = entryScripts.reduce(
 );
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
 console.log(`check_bundle_size: total ${kb(total)} in ${files.length} files`);
-console.log(`check_bundle_size: initial JS (gzip) ${kb(initialGzip)} [${entryScripts.map((s) => relative(".", s)).join(", ")}]`);
+console.log(
+  `check_bundle_size: initial JS (gzip) ${kb(initialGzip)} [${entryScripts.map((s) => relative(".", s)).join(", ")}]`,
+);
 if (total > TOTAL_BUDGET || initialGzip > INITIAL_JS_GZIP_BUDGET) {
   console.error(
     `check_bundle_size: over budget (total ≤ ${kb(TOTAL_BUDGET)}, initial JS gzip ≤ ${kb(INITIAL_JS_GZIP_BUDGET)})`,

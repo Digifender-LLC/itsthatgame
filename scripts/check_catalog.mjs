@@ -20,7 +20,8 @@ for (const game of catalog.games) {
     continue;
   }
   const src = readFileSync(join(dir, "src/index.ts"), "utf8");
-  if (!src.includes(`SLUG = "${game.slug}"`)) errors.push(`${game.slug}: src/index.ts SLUG does not match`);
+  if (!src.includes(`SLUG = "${game.slug}"`))
+    errors.push(`${game.slug}: src/index.ts SLUG does not match`);
   if (game.releasable) {
     for (const f of ["ORIGINALITY.md", "QA.md", "README.md", "ASSETS.md"]) {
       if (!existsSync(join(dir, f))) errors.push(`${game.slug}: releasable but missing ${f}`);
