@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "games": [
+    {
+      "slug": "ring-sort",
+      "title": "Ring Sort",
+      "tier": "free",
+      "addedInVersion": "1.0.0",
+      "releasable": true,
+      "icon": "drawn:ring-sort",
+      "module": "ring-sort"
+    },
+    {
+      "slug": "pin-drop",
+      "title": "Pin Drop",
+      "tier": "free",
+      "addedInVersion": "1.0.0",
+      "releasable": true,
+      "icon": "drawn:pin-drop",
+      "module": "pin-drop"
+    },
+    {
+      "slug": "tile-trio",
+      "title": "Tile Trio",
+      "tier": "free",
+      "addedInVersion": "1.0.0",
+      "releasable": true,
+      "icon": "drawn:tile-trio",
+      "module": "tile-trio"
+    },
+    {
+      "slug": "stack-up",
+      "title": "Stack Up",
+      "tier": "premium",
+      "addedInVersion": "1.0.0",
+      "releasable": true,
+      "icon": "drawn:stack-up",
+      "module": "stack-up"
+    },
+    {
+      "slug": "park-out",
+      "title": "Park Out",
+      "tier": "premium",
+      "addedInVersion": "1.0.0",
+      "releasable": true,
+      "icon": "drawn:park-out",
+      "module": "park-out"
+    },
+    {
+      "slug": "merge-drop",
+      "title": "Merge Drop",
+      "tier": "premium",
+      "addedInVersion": "1.0.0",
+      "releasable": true,
+      "icon": "drawn:merge-drop",
+      "module": "merge-drop"
+    },
+    {
+      "slug": "paint-path",
+      "title": "Paint Path",
+      "tier": "premium",
+      "addedInVersion": "1.0.0",
+      "releasable": true,
+      "icon": "drawn:paint-path",
+      "module": "paint-path"
+    },
+    {
+      "slug": "untangle",
+      "title": "Untangle",
+      "tier": "premium",
+      "addedInVersion": "1.0.0",
+      "releasable": true,
+      "icon": "drawn:untangle",
+      "module": "untangle"
+    }
+  ]
+}
