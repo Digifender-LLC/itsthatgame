@@ -3,6 +3,7 @@
 #   wrangler secret put TURNSTILE_SECRET --env <preview|production>
 #   wrangler secret put ACCESS_AUD       --env <preview|production>
 #   wrangler secret put HASH_PEPPER      --env <preview|production>
+#   wrangler secret put OPERATOR_EMAILS  --env <preview|production>   (personal data stays out of the repo)
 # For local dev copy .dev.vars.example to .dev.vars (git-ignored).
 #
 # Wrangler environments do not inherit bindings or vars, so each [env.*] repeats them.
@@ -42,16 +43,15 @@ crons = ["17 3 * * *"]
 name = "itsthatgame-api-preview"
 
 [env.preview.vars]
-ALLOWED_ORIGIN = "https://REPLACE_WITH_PREVIEW_LANDING_ORIGIN"
+ALLOWED_ORIGIN = "https://preview.itsthatgame-landing.pages.dev"
 APP_ORIGINS = "capacitor://localhost,https://localhost"
-OPERATOR_EMAILS = "REPLACE_WITH_OPERATOR_EMAIL"
-ACCESS_TEAM_DOMAIN = "REPLACE_WITH_TEAM.cloudflareaccess.com"
+ACCESS_TEAM_DOMAIN = "zemdregon.cloudflareaccess.com"
 WAITLIST_RETENTION_END = ""
 
 [[env.preview.d1_databases]]
 binding = "DB"
 database_name = "itsthatgame-preview"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "4d272d48-0565-48eb-a8e1-c6331a8ba30e"
 migrations_dir = "migrations"
 
 [[env.preview.analytics_engine_datasets]]

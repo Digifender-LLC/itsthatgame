@@ -5,6 +5,24 @@ acceptance criteria; production backend for M5 and M6.
 **Design references:** [HLD §6](../design/HLD.md#6-deployment-topology),
 [TDD §7](../design/TDD.md#7-environments-configuration-and-release), [Roadmap D5](../ROADMAP.md#6-decisions-made-under-delegated-authority).
 
+## Status (2026-10-04)
+
+Account: the owner's "Enders Account"; Access team `zemdregon.cloudflareaccess.com`
+([Roadmap D13](../ROADMAP.md#6-decisions-made-under-delegated-authority)).
+
+| Step | Preview | Production |
+|---|---|---|
+| D1 database | `itsthatgame-preview`, migrations 0001–0002 applied | `itsthatgame-production` created, no migrations yet |
+| Worker | `https://itsthatgame-api-preview.lmao.workers.dev` | Not deployed |
+| Turnstile widget | Created for `preview.itsthatgame-landing.pages.dev` | Not created |
+| Secrets (`TURNSTILE_SECRET`, `HASH_PEPPER`, `OPERATOR_EMAILS`, `ACCESS_AUD`) | Not set | Not set |
+| Access app on `/admin` | Not created: the API token gets `auth.forbidden` (code 1010) | Not created |
+| Landing page (Pages `itsthatgame-landing`) | Project created; upload fails in the agent environment, whose proxy replaces the Pages upload JWT (code 8000013). Use the Deploy workflow instead | Not deployed |
+| Smoke test (§4) | Not run | Not run |
+
+To finish: add *Access: Apps and Policies: Edit* to the API token, then complete §2 steps
+3–5 and §3 for preview, run §4, and repeat for production.
+
 ## 1. One-time account setup (owner or an agent holding the token)
 
 1. Create a Cloudflare account for Digifender LLC (D4). Workers Paid plan is recommended
@@ -34,11 +52,11 @@ pnpm exec wrangler d1 create itsthatgame-preview      # then itsthatgame-prod
    pnpm exec wrangler secret put TURNSTILE_SECRET --env preview
    pnpm exec wrangler secret put HASH_PEPPER --env preview    # 32+ random bytes, e.g. openssl rand -hex 32
    pnpm exec wrangler secret put ACCESS_AUD --env preview     # from step 5
+   pnpm exec wrangler secret put OPERATOR_EMAILS --env preview  # comma-separated (D13)
    ```
 
 4. Vars in `wrangler.toml` per environment: `ALLOWED_ORIGIN` (landing URL),
-   `APP_ORIGINS` (`capacitor://localhost,https://localhost`), `OPERATOR_EMAILS`,
-   `ACCESS_TEAM_DOMAIN`.
+   `APP_ORIGINS` (`capacitor://localhost,https://localhost`), `ACCESS_TEAM_DOMAIN`.
 5. Access: create a self-hosted application covering `<api-host>/admin/*`, policy
    "Allow" for the operator email(s). Copy its Application Audience (AUD) tag into the
    `ACCESS_AUD` secret.

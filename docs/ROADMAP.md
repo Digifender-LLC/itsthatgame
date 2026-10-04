@@ -177,8 +177,8 @@ dependency graph per D12.
 
 | ID | Milestone | Status | Depends on |
 |---|---|---|---|
-| M0 | Documentation baseline | Built; `Done` when PR #1 merges | — |
-| M1 | Demand validation | T1–T4 built; T5 **Blocked (P1)**; T6 waits on T5 | M0 |
+| M0 | Documentation baseline | Done (PR #1 merged 2026-10-04) | — |
+| M1 | Demand validation | T1–T4 built; T5 in progress (preview API live), rest **Blocked (P1)**; T6 waits on T5 | M0 |
 | M2 | Game runtime prototype | T1–T4 built; T5 **Blocked (P4)** for device checks | M0 |
 | G1 | Demand go/no-go | Waiting on M1-T6 readout | M1 |
 | M3 | Launch library and content pipeline | Built (8 games, 3 free); device QA **Blocked (P4)** | M2, G1 |
@@ -193,7 +193,7 @@ dependency graph per D12.
 - **Acceptance:** all files in [§4](#4-documentation-map) exist; `python3 scripts/check_docs.py`
   passes; every must-have SRS requirement maps to a milestone below.
 - **Verification:** run the script (done 2026-10-04, passed; see PR #1); M0 is `Done` when PR #1 merges.
-- **Status:** Built. `check_docs.py` runs in CI (`.github/workflows/ci.yml`).
+- **Status:** Done (PR #1 merged 2026-10-04). `check_docs.py` runs in CI (`.github/workflows/ci.yml`).
 
 ### M1 Demand validation
 
@@ -233,7 +233,7 @@ dependency graph per D12.
 | M1-T2 | Built | `apps/landing/` (index, privacy, terms, support, unsubscribe pages); `apps/landing/src/lib.test.ts`; `apps/landing/e2e/landing.spec.ts` (form success, errors, UTM, axe checks). Lighthouse report deferred to the production URL (T5) |
 | M1-T3 | Built | `services/api/src/routes/waitlist.ts`, `migrations/0001_init.sql`; `services/api/test/waitlist.test.ts` covers valid, duplicate, invalid email, missing consent, failed Turnstile, rate-limited |
 | M1-T4 | Built | `services/api/src/routes/admin.ts`, `src/auth.ts`; `services/api/test/admin.test.ts` (no JWT rejected, stats match fixtures, CSV export), unsubscribe tests in `waitlist.test.ts` |
-| M1-T5 | **Blocked (P1)** | Config ready: `services/api/wrangler.toml` (placeholders), `.github/workflows/deploy.yml` (manual). Steps: [runbooks/cloudflare-deploy.md](runbooks/cloudflare-deploy.md) |
+| M1-T5 | In progress; **Blocked (P1)** for the rest | 2026-10-04: D1 `itsthatgame-preview` and `itsthatgame-production` created; migrations 0001–0002 applied to preview; Worker `itsthatgame-api-preview` deployed to `https://itsthatgame-api-preview.lmao.workers.dev` (validation answers 400 on an empty `POST /v1/waitlist`); Turnstile widget and Pages project `itsthatgame-landing` created. Still needed: Worker secrets, Access app, landing upload, smoke test, production (see the runbook's "Status" section). Steps: [runbooks/cloudflare-deploy.md](runbooks/cloudflare-deploy.md) |
 | M1-T6 | Waiting on T5 | Campaign plan [runbooks/validation-campaign.md](runbooks/validation-campaign.md); readout template [validation/readout-template.md](validation/readout-template.md) |
 
 Non-engineering work in M1 (owner-led, not tracked as tasks): producing short "we made
@@ -412,6 +412,7 @@ architectural) with the reason.
 | D10 | **One PR.** All milestones were built on the single branch the environment allows (`claude/agents-md-and-roadmap-docs-zuv158`, PR #1) instead of one PR per task. Commits name task IDs. | The agent may push only that branch. | When more branches are allowed; later work goes one task per PR (agents.md). |
 | D11 | **Games use plain Canvas 2D, not Phaser.** The SDK provides canvas, loop, and input helpers. | The 8 launch games are simple 2D puzzles; Canvas keeps each game small (whole app 251 KB) and avoids a 1 MB engine. Not a new runtime dependency, so no ADR. | A game needs physics or a scene graph that the helpers can't reasonably provide. |
 | D12 | **Built ahead of G1.** On 2026-10-04 the owner set the goal "complete the roadmap completely", so M3–M5 were built before the G1 readout. G1 still decides launch spending (store fees, marketing, M6 release). | Owner goal; code is cheap to keep and does not commit money. | G1 *Stop*: keep the code, do not release. |
+| D13 | **Cloudflare placement.** M1-T5 deploys to the owner's existing Cloudflare account ("Enders Account", workers.dev subdomain `lmao`) and its existing Zero Trust team `zemdregon.cloudflareaccess.com`. Operator emails are a Worker secret (`OPERATOR_EMAILS`), not a committed var, so personal addresses stay out of the repo. | The owner supplied this account for P1 on 2026-10-04; a public repo should not carry personal email addresses. | A Digifender LLC account is created (D4): move resources there before M6. |
 
 **Conflicts found:** one, the price point: the pitch ($5/month) versus the shared
 analysis. Resolved by D1 (lower launch price, $4.99 measured as a test arm) and D2.
