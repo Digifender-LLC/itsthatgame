@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { hmacHex } from "../src/crypto";
 import { harness, jsonInit, resetDb } from "./helpers";
 
-const ORIGIN = env.ALLOWED_ORIGIN;
+const ORIGIN = env.ALLOWED_ORIGIN.split(",")[0]!;
 
 function signupBody(overrides: Record<string, unknown> = {}) {
   return {

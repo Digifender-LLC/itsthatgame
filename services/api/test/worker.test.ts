@@ -73,10 +73,13 @@ describe("deployed worker entrypoint", () => {
   it("answers CORS preflight for the landing origin", async () => {
     const res = await exports.default.fetch("https://api.test/v1/waitlist", {
       method: "OPTIONS",
-      headers: { Origin: env.ALLOWED_ORIGIN, "Access-Control-Request-Method": "POST" },
+      headers: {
+        Origin: env.ALLOWED_ORIGIN.split(",")[0]!,
+        "Access-Control-Request-Method": "POST",
+      },
     });
     expect(res.status).toBe(204);
-    expect(res.headers.get("Access-Control-Allow-Origin")).toBe(env.ALLOWED_ORIGIN);
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe(env.ALLOWED_ORIGIN.split(",")[0]!);
   });
 
   it("rejects admin calls without Access identity", async () => {

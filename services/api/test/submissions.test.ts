@@ -156,7 +156,10 @@ describe("POST /v1/submissions", () => {
 
     const landing = await h.call("/v1/submissions", {
       method: "OPTIONS",
-      headers: { Origin: env.ALLOWED_ORIGIN, "Access-Control-Request-Method": "POST" },
+      headers: {
+        Origin: env.ALLOWED_ORIGIN.split(",")[0]!,
+        "Access-Control-Request-Method": "POST",
+      },
     });
     expect(landing.headers.get("Access-Control-Allow-Origin")).toBeNull();
   });

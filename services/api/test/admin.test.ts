@@ -104,7 +104,7 @@ describe("admin authentication (SEC-3)", () => {
   it("caches the JWKS and sends no CORS headers on admin routes", async () => {
     const h = adminHarness();
     const res1 = await asOperator(h, "/admin/v1/waitlist/stats", {
-      headers: { Origin: env.ALLOWED_ORIGIN },
+      headers: { Origin: env.ALLOWED_ORIGIN.split(",")[0]! },
     });
     await asOperator(h, "/admin/v1/waitlist/stats");
     expect(res1.status).toBe(200);
