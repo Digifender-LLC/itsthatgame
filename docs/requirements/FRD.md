@@ -24,7 +24,7 @@ There are no other roles in the MVP.
 | `RULE-1` | A game is free if and only if its catalog entry has `tier: "free"`. Free games are always playable. All other games are premium. |
 | `RULE-2` | The store (through RevenueCat) is the source of truth for entitlement. The app caches the last known entitlement state and expiry on device. |
 | `RULE-3` | The paywall is shown only when a player taps a locked game or chooses "Unlock all games" in Settings. Never on launch, never mid-game, never on a timer. |
-| `RULE-4` | Offline grace: if the device cannot reach RevenueCat, a cached active entitlement is honored until its cached expiry plus a 7-day grace period `[Proposal]`. A lifetime entitlement never expires. |
+| `RULE-4` | Offline grace: if the device cannot reach RevenueCat, a cached active entitlement is honored until its cached expiry plus a 7-day grace period (Roadmap D9). A lifetime entitlement never expires. |
 | `RULE-5` | When an entitlement lapses, premium games relock; all local progress is kept and becomes available again on re-entitlement. |
 | `RULE-6` | Waitlist emails are normalized (trimmed, lowercased). One record per normalized email. A repeat signup updates the price preference and `updated_at` but keeps the first-seen source. Consent is required. |
 | `RULE-7` | A submission has a description (10–1,000 characters, required), an optional link (http or https, at most 500 characters), and an optional "where I saw it" text (at most 100 characters). The form tells the player not to include personal information. |

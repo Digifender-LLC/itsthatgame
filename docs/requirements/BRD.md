@@ -27,7 +27,7 @@ option for parents.
 |---|---|---|
 | `BO-1` | Establish, with evidence and before major build investment, whether enough people will pay for an ad-free hypercasual collection, and at what price structure. | `[Delegated]` from `[Proposal]` (validate first) |
 | `BO-2` | Generate recurring or one-time revenue from players through a paid unlock of the library, with a free tier that contains no ads. | `[User]` paid model; free tier `[Proposal]` |
-| `BO-3` | Retain paying players by shipping new original games regularly, partly sourced from player submissions. | `[User]` submission idea; cadence `[Open]` |
+| `BO-3` | Retain paying players by shipping new original games regularly, partly sourced from player submissions. | `[User]` submission idea; cadence `[Delegated]` (Roadmap D8) |
 | `BO-4` | Keep customer acquisition cost below the value of a paying customer, favoring organic short-video content ("we built the game from the ad"). | `[Proposal]` |
 
 ## 4. Stakeholders
@@ -48,38 +48,39 @@ option for parents.
 | `BC-2` | Low fixed cost and low operational burden: one operator `[Assumption]`, so prefer managed services and avoid systems that need on-call attention. | `[Assumption]` |
 | `BC-3` | Digital content sold in the mobile apps uses the platform in-app purchase systems; the stores take their commission. | `[Assumption]` (conservative) |
 | `BC-4` | Mechanics may be inspired by existing games and ads; art, names, characters, audio, UI and overall look and feel must be original. Close visual copies are not allowed (the analysis cites Tetris v. Xio). | `[User]` (from shared analysis) |
-| `BC-5` | The product is not directed at children and collects no personal data from children until a legal and store-policy review approves kid positioning (Q3). | `[Delegated]` conservative |
-| `BC-6` | Price and model are undecided (Roadmap Q1). Nothing may hard-code a price. | `[Open]` |
+| `BC-5` | The product is not directed at children and collects no personal data from children (Roadmap D3). | `[Delegated]` |
+| `BC-6` | Prices are set in the store/RevenueCat configuration (launch prices per Roadmap D1, adjustable per D2). Nothing in code may hard-code a price. | `[Delegated]` |
 
 ## 6. Business model options
 
-The system is designed to support all of these; the choice is the owner's after M1
-(Roadmap Q1). `[Delegated]` mechanism, `[Open]` choice.
+Options considered. The system supports all of them. **Decision:** $2.99/month plus
+$19.99 lifetime, with a free tier of 3 games (Roadmap D1, D6), adjusted by the G1 rule
+(D2). `[Delegated]`
 
 | Option | Source | Notes |
 |---|---|---|
 | Monthly subscription, $4.99 | `[User]` pitch ("$5/month") | Analysis flags as steep for time-killers versus Apple Arcade and Netflix Games |
 | Monthly subscription, $1.99–2.99 | `[Proposal]` analysis | Lower barrier; needs higher volume |
-| Lifetime unlock, $14.99–19.99 | `[Proposal]` analysis | Matches "people hate subscriptions for simple games"; no recurring revenue |
+| Lifetime unlock, $14.99–19.99 (chosen: $19.99) | `[Proposal]` analysis | Matches "people hate subscriptions for simple games"; no recurring revenue |
 | Free tier: a few games, no ads | `[Proposal]` analysis | Adopted as the funnel in the plan (`CAP-4`) |
 
-**M1 price test `[Proposal]`:** the landing page asks which option the visitor would pick:
-$2.99/month, $4.99/month, or $14.99 once. Stated preference is a weak signal; it informs
+**M1 price test `[Delegated]`:** the landing page asks which option the visitor would pick:
+$2.99/month, $4.99/month, $19.99 once, or "only if it were free". Stated preference is a weak signal; it informs
 G1 but does not replace a real paid test.
 
 ## 7. Success measures
 
-Measured in M1 (validation) and after launch. All thresholds are `[Proposal]` for the
-owner to accept or change at G1; none is a commitment.
+Measured in M1 (validation) and after launch. G1 thresholds are adopted `[Delegated]`
+and applied by rule D2 in the Roadmap.
 
-| Measure | Outcome | Proposed G1 threshold |
+| Measure | Outcome | G1 threshold |
 |---|---|---|
 | Waitlist signups during the validation window | `BO-1` | ≥ 500 signups in 4 weeks |
 | Visit-to-signup conversion on the landing page | `BO-1` | ≥ 10% |
 | Share of signups choosing a paid option over "only if free" | `BO-1`, `BO-2` | ≥ 40% |
 | Signups per 1,000 short-video views, by video | `BO-4` | Tracked; used to compare angles (ad-game, parents, offline) |
-| Post-launch: free-to-paid conversion, paid retention at 30/90 days, refunds | `BO-2`, `BO-3` | Set at G1 |
-| Post-launch: games shipped per month; share sourced from submissions | `BO-3` | Set at G1 (Q2) |
+| Post-launch: free-to-paid conversion, paid retention at 30/90 days, refunds | `BO-2`, `BO-3` | Targets set in the G1 record from validation data |
+| Post-launch: games shipped per month; share sourced from submissions | `BO-3` | 2 per month (Roadmap D8) |
 
 ## 8. Business risks
 

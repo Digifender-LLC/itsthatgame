@@ -19,10 +19,10 @@ is not obvious:
 | Tag | Meaning |
 |---|---|
 | `[User]` | Stated or clearly originated by the project owner (Ender). |
-| `[Delegated]` | Decided by an agent under the owner's delegation on 2026-10-04. Not owner-approved; may be revisited freely by the owner. |
+| `[Delegated]` | Decided by an agent under the owner's delegation. On 2026-10-04 the owner made agents the final authority on this project and asked not to be sent questions ("you are the final authority, don't raise any questions to me"). Delegated decisions are binding unless the owner overrides them; they are not owner *reviews*, and must not be described as such. |
 | `[Assumption]` | Believed true, not verified. Must be checked before it is relied on for something irreversible. |
 | `[Proposal]` | A suggested target or option, e.g. a number. Not a commitment. |
-| `[Open]` | Unresolved question. Listed in [§6](#6-open-questions-and-conflicts). |
+| `[Open]` | Unresolved question. Agents resolve these themselves and record the decision in [§6](#6-decisions-made-under-delegated-authority); none are open as of 2026-10-04. |
 
 ### Status values
 
@@ -40,7 +40,7 @@ analysis the owner shared on 2026-10-04; working tagline "The last mobile ad gam
 ever need").
 
 **Intended users.** Ad-weary casual players; parents who want ad-free games for their
-children (positioning only, see `[Open]` Q3); people who play offline (flights, travel,
+children (as an ad-free option only, not a kids' product; see D3); people who play offline (flights, travel,
 deployments, poor signal). Detail: [PRD §2](requirements/PRD.md#2-users-and-personas).
 
 **Desired outcomes.** Prove that enough people will pay for ad-free hypercasual games
@@ -71,7 +71,7 @@ Performed 2026-10-04 against `github.com/Digifender-LLC/itsthatgame`.
 | The repository had **no commits and no branches**. No source code, tests, configuration, CI, agent instructions, or documentation existed. | `git ls-remote origin` returned no refs; GitHub branch listing returned an empty list. |
 | There was **no roadmap at all**, fragmented or otherwise. This document is derived from scratch. | As above. |
 | The only planning input is the owner's message in the project thread on 2026-10-04: an analysis of the pitch (ad-free hypercasual collection, "fake ad" hook, submission feature, $5/month idea, pricing and retention risks, parent and offline angles, advice to validate demand first) plus instructions to create `agents.md` and this document set. | Project thread (not in the repo). Its content is captured as `[User]` pitch items and `[Proposal]` analysis items in the [BRD](requirements/BRD.md). |
-| The analysis is advice, not an owner decision. Its pricing ($1.99–2.99/month, $15–20 lifetime), free tier, and validate-first suggestions are treated as `[Proposal]` until the owner confirms. The validate-first sequencing is adopted as a `[Delegated]` planning decision because it is the conservative choice. | — |
+| The analysis is advice, not an owner decision. Its pricing, free-tier, and validate-first suggestions were inputs; the resulting choices were made under delegated authority and are recorded in [§6](#6-decisions-made-under-delegated-authority). | Owner instruction of 2026-10-04 granting final authority (project thread) |
 | No external systems (stores, Cloudflare, RevenueCat, domains, social accounts) were inspected. Nothing about their state is assumed beyond what is labeled `[Assumption]`. | — |
 
 **Current state:** documentation only (this PR). **Target state:** a released iOS/Android
@@ -112,7 +112,7 @@ All business constraints: [BRD §5](requirements/BRD.md#5-business-constraints).
 
 | Decision | Provenance | Record |
 |---|---|---|
-| Validate demand (landing page + waitlist + short videos) before building the full library; gate later milestones on an owner go/no-go | `[Delegated]` from `[Proposal]` | [§5 Gate G1](#gate-g1-demand-go--no-go) |
+| Validate demand (landing page + waitlist + short videos) before building the full library; gate later milestones on a go/no-go against fixed thresholds | `[Delegated]` | [§5 Gate G1](#gate-g1-demand-go--no-go) |
 | Cross-platform TypeScript games inside a Capacitor native shell | `[Delegated]` | [ADR-0002](adr/0002-typescript-games-in-capacitor-shell.md) |
 | No ads and no third-party ad/tracking SDKs | `[User]` premise, formalized | [ADR-0003](adr/0003-no-ads-no-third-party-tracking.md) |
 | Backend on Cloudflare Workers, D1, and Workers Analytics Engine | `[Delegated]` | [ADR-0004](adr/0004-cloudflare-workers-d1-backend.md) |
@@ -120,7 +120,7 @@ All business constraints: [BRD §5](requirements/BRD.md#5-business-constraints).
 | No user accounts in MVP; install-scoped anonymous identity | `[Delegated]` | [ADR-0006](adr/0006-no-accounts-install-scoped-identity.md) |
 | Games bundled in the app binary; no remote code delivery | `[Delegated]` | [ADR-0007](adr/0007-games-bundled-in-binary.md) |
 | Submissions are text and link only, private, and moderated | `[Delegated]` | [ADR-0008](adr/0008-text-only-moderated-submissions.md) |
-| Business model supports both subscription and lifetime unlock; which to sell, and at what price, is decided from validation data | `[Delegated]` (mechanism) / `[Open]` (choice) | [BRD §6](requirements/BRD.md#6-business-model-options), Q1 |
+| Launch pricing: $2.99/month subscription and $19.99 lifetime unlock, both unlocking the full library; 3 free games | `[Delegated]` | [§6 D1](#6-decisions-made-under-delegated-authority), [BRD §6](requirements/BRD.md#6-business-model-options) |
 
 ---
 
@@ -147,14 +147,14 @@ No documents are superseded (none existed before this task).
 
 ## 5. Milestones
 
-Dependency graph (`G1` is an owner decision, not engineering work):
+Dependency graph (`G1` is a decision gate, not engineering work):
 
 ```mermaid
 flowchart LR
   M0[M0 Docs baseline] --> M1[M1 Demand validation]
   M0 --> M2[M2 Game runtime prototype]
   M2 -. prototype clips .-> M1
-  M1 --> G1{G1 Owner go / no-go}
+  M1 --> G1{G1 go / no-go}
   G1 -->|go| M3[M3 Launch library]
   G1 -->|go| M4[M4 Monetization]
   G1 -->|go| M5[M5 Submissions]
@@ -172,7 +172,7 @@ flowchart LR
 | M0 | Documentation baseline | Partial: written in this PR; `Done` when merged | — |
 | M1 | Demand validation | Planned (**next**) | M0 |
 | M2 | Game runtime prototype | Planned (may run in parallel with M1) | M0 |
-| G1 | Demand go/no-go | Planned (owner decision) | M1 |
+| G1 | Demand go/no-go | Planned (decision gate, rules in D2) | M1 |
 | M3 | Launch library and content pipeline | Planned | M2, G1 |
 | M4 | Monetization | Planned | M2, G1 |
 | M5 | Submissions | Planned | M1 (backend foundation), G1 |
@@ -184,7 +184,7 @@ flowchart LR
 - **Objective:** one coherent, traceable specification and agent instruction file.
 - **Acceptance:** all files in [§4](#4-documentation-map) exist; `python3 scripts/check_docs.py`
   passes; every must-have SRS requirement maps to a milestone below.
-- **Verification:** run the script (done 2026-10-04, passed; see PR); owner review.
+- **Verification:** run the script (done 2026-10-04, passed; see PR #1); M0 is `Done` when PR #1 merges.
 
 ### M1 Demand validation
 
@@ -195,7 +195,7 @@ flowchart LR
 - **Design:** [HLD §4.1](design/HLD.md#41-waitlist-signup), [LLD §2](design/LLD.md#2-waitlist-api-if-1),
   [LLD §5](design/LLD.md#5-d1-schema), [TDD §3](design/TDD.md#3-repository-layout).
 - **Acceptance (milestone):**
-  1. The landing page is publicly reachable over HTTPS on the production domain and
+  1. The landing page is publicly reachable over HTTPS on its production URL (D5) and
      states the value proposition and the price options under test.
   2. A signup from a phone browser is stored exactly once in production D1 with consent
      timestamp, price preference, and UTM source; a repeat signup does not create a
@@ -210,11 +210,11 @@ flowchart LR
 | Task | Objective | Refs | Depends on | Completion check |
 |---|---|---|---|---|
 | M1-T1 | Bootstrap the monorepo: pnpm workspace, TypeScript strict, ESLint, Prettier, Vitest, GitHub Actions CI running lint/typecheck/test/`check_docs.py`; dependency guard for `SEC-1` | [TDD §3–§6](design/TDD.md#3-repository-layout), `SEC-1` | — | CI green on the PR; a test PR adding a denylisted package fails the guard |
-| M1-T2 | Landing page `apps/landing`: value proposition, price-preference choice `[Proposal]` (BRD §6 options plus "only if it were free"), email + consent checkbox, Turnstile, UTM capture, privacy notice | `FR-WL-1`, `FR-WL-4`, `NFR-8`, `SEC-4`, [LLD §2](design/LLD.md#2-waitlist-api-if-1) | M1-T1 | Playwright test submits the form against a local Worker and sees the success state; Lighthouse mobile LCP report attached |
+| M1-T2 | Landing page `apps/landing`: value proposition, price-preference choice (BRD §6 test arms plus "only if it were free"), email + consent checkbox, Turnstile, UTM capture, privacy notice | `FR-WL-1`, `FR-WL-4`, `NFR-8`, `SEC-4`, [LLD §2](design/LLD.md#2-waitlist-api-if-1) | M1-T1 | Playwright test submits the form against a local Worker and sees the success state; Lighthouse mobile LCP report attached |
 | M1-T3 | Waitlist API in `services/api`: `POST /v1/waitlist`, D1 migration `0001`, validation, normalization, idempotent upsert, Turnstile verification, rate limit | `FR-WL-2`, `FR-WL-3`, `SEC-4`, `SEC-5`, `DATA-1`, `IF-1`, [LLD §2, §5, §8](design/LLD.md#2-waitlist-api-if-1) | M1-T1 | Worker integration tests cover: valid signup, duplicate signup, invalid email, missing consent, failed Turnstile, rate-limited |
 | M1-T4 | Owner stats and deletion: `GET /admin/v1/waitlist/stats`, `GET /admin/v1/waitlist/export.csv`, `POST /v1/waitlist/unsubscribe`, behind Cloudflare Access for `/admin/*` | `FR-WL-5`, `FR-WL-6`, `SEC-3`, `IF-6` | M1-T3 | Tests: admin routes reject requests without the Access JWT; unsubscribe deletes the row; stats counts match fixtures |
-| M1-T5 | Deploy: `wrangler` environments `preview` and `production`, D1 databases, secrets, domain, Access policy | [TDD §7](design/TDD.md#7-environments-configuration-and-release) | M1-T2…T4 | **Blocked on owner:** Cloudflare account access, domain choice (Q5). Done when acceptance item 1–3 pass in production |
-| M1-T6 | Validation readout: collect signups for the agreed window; produce the G1 readout (signups, source mix, price preference, video views → visits → signups) | [BRD §7](requirements/BRD.md#7-success-measures) | M1-T5 | Readout document committed under `docs/validation/`; owner records the G1 decision in this file |
+| M1-T5 | Deploy: `wrangler` environments `preview` and `production`, D1 databases, secrets, Access policy, on Cloudflare-provided subdomains (D5) | [TDD §7](design/TDD.md#7-environments-configuration-and-release) | M1-T2…T4 | **Prerequisite P1** (Cloudflare account credentials in the agent environment). Done when acceptance items 1–3 pass in production |
+| M1-T6 | Validation readout: collect signups for 4 weeks; produce the G1 readout (signups, source mix, price preference, video views → visits → signups) | [BRD §7](requirements/BRD.md#7-success-measures) | M1-T5 | Readout committed under `docs/validation/`; G1 outcome applied per D2 and recorded in this file |
 
 Non-engineering work in M1 (owner-led, not tracked as tasks): producing short "we made
 the game from the ad" videos, optionally using M2 prototype footage.
@@ -253,12 +253,13 @@ in the shared analysis and are mechanically simple.
 
 ### Gate G1: demand go / no-go
 
-- **Owner decision**, informed by the M1-T6 readout. Proposed thresholds are in
-  [BRD §7](requirements/BRD.md#7-success-measures) and are `[Proposal]` only.
-- **Outcomes:** *Go* (proceed to M3–M5 with the chosen business model and price
-  hypothesis), *Iterate* (change positioning, price, or audience such as parents, then
-  rerun M1-T6), or *Stop*.
-- **Status:** Planned. Record the decision, date, and rationale here when made.
+- **Decided by the orchestrating agent** by applying rule D2 to the M1-T6 readout,
+  using the thresholds in [BRD §7](requirements/BRD.md#7-success-measures). The owner may
+  override at any time.
+- **Outcomes:** *Go* (proceed to M3–M5 with the D1 pricing, adjusted per D2), *Iterate*
+  (one rerun of M1-T6 with changed positioning, e.g. offline or ad-free-for-families
+  angles), or *Stop* (pause build work; report to the owner).
+- **Status:** Planned. Record the outcome, date, readout link, and rationale here.
 
 ### M3 Launch library and content pipeline
 
@@ -266,8 +267,7 @@ in the shared analysis and are mechanically simple.
   enough games to launch (`BO-3`).
 - **Requirements:** `FR-GAME-1`, `FR-GAME-2`, `FR-APP-5`, `NFR-3`, `NFR-4`; `CAP-9`.
 - **Design:** [SDD §3](design/SDD.md#3-game-runtime), [TDD §8](design/TDD.md#8-content-pipeline).
-- **Acceptance:** the launch library contains the number of games agreed at G1
-  (`[Proposal]` 8–10, of which 3 free); each game has a completed originality checklist
+- **Acceptance:** the launch library contains 8 games, of which 3 are free (D6); each game has a completed originality checklist
   and QA checklist in the repo; a new game can be scaffolded from the template and pass
   the conformance test without changes to the shell.
 - **Tasks (higher-level):** game template generator; originality checklist and review
@@ -284,7 +284,7 @@ in the shared analysis and are mechanically simple.
   all premium games; restore works after reinstall; with network off, a previously
   entitled install keeps access for the grace period (`RULE-4`); a lapsed subscription
   relocks premium games without losing progress.
-- **Prerequisites:** G1 business-model choice (Q1); store accounts; RevenueCat project.
+- **Prerequisites:** G1 *Go*; prices per D1/D2; P2 (store accounts) and P3 (RevenueCat project).
 
 ### M5 Submissions
 
@@ -306,13 +306,17 @@ in the shared analysis and are mechanically simple.
   `DATA-*`; analytics events visible in aggregate; TestFlight and Play internal testing
   completed with the [TDD §5](design/TDD.md#5-testing-strategy) release checklist; both
   stores approve v1.0.
-- **Prerequisites:** Q3 (kid positioning) resolved for store listing copy; Q4 (legal
-  entity, privacy policy owner).
+- **Additional tasks:** trademark knockout search for the product name in both stores
+  and the USPTO database before submitting listings (D7); production custom domain
+  (D5); listing copy consistent with D3.
+- **Prerequisites:** P2 (store accounts under the publisher in D4); P4 (macOS build
+  capability).
 
 ### M7 Post-launch content cadence
 
-- **Objective:** regular new games, partly sourced from submissions (`BO-3`). Cadence
-  target is `[Open]` (Q2). Each release follows the M3 pipeline and M6 release
+- **Objective:** regular new games, partly sourced from submissions (`BO-3`). Internal
+  cadence target: 2 new games per month (D8); no public cadence promise until that is
+  met for 3 consecutive months. Each release follows the M3 pipeline and M6 release
   checklist. Detail to be planned after launch data exists.
 
 ### Deferred
@@ -320,7 +324,7 @@ in the shared analysis and are mechanically simple.
 | Item | Reason |
 |---|---|
 | Accounts, cloud save, cross-platform entitlement | ADR-0006; not needed to validate value |
-| Kids Category / "kid-safe" marketing | Requires legal and store-policy review (Q3, `BC-5`) |
+| Kids Category / "kid-safe" marketing | Not pursued in v1 (D3, `BC-5`); revisit only with a legal and store-policy review |
 | Public voting on submissions | Moderation burden; revisit after M5 volume is known |
 | Leaderboards, multiplayer | Not core to the value proposition |
 | Web purchases / web player | Store-policy and complexity risk ([ADR-0005](adr/0005-store-iap-via-revenuecat.md)) |
@@ -328,20 +332,40 @@ in the shared analysis and are mechanically simple.
 
 ---
 
-## 6. Open questions and conflicts
+## 6. Decisions made under delegated authority
 
-| ID | Question | Impact | Default until answered |
+On 2026-10-04 the owner made agents the final authority and asked not to be sent
+questions. The questions identified during the audit are therefore decided here. All are
+`[Delegated]`; the owner may override any of them. Agents must not reopen them as
+questions to the owner; to change one, record a new decision here (or an ADR if
+architectural) with the reason.
+
+| ID | Decision | Rationale | Revisit when |
 |---|---|---|---|
-| Q1 | Subscription, lifetime unlock, or both, and at what price? The pitch said $5/month `[User]`; the analysis suggested testing $1.99–2.99/month or $15–20 lifetime `[Proposal]`. | M4 product configuration; landing-page copy | M1 tests three options (see BRD §6). The system supports both models (ADR-0005). |
-| Q2 | Content cadence commitment after launch (e.g. one new game every two weeks)? | Retention promise in marketing; M7 planning | No public cadence promise until M3 shows real build throughput. |
-| Q3 | Will the product be marketed as kid-safe, or listed in the Kids Category? | COPPA and store Kids rules; analytics and submission design | Not directed to children; no Kids Category; no kid-targeted claims (`BC-5`). |
-| Q4 | Which legal entity publishes the apps and owns the privacy policy? `[Assumption]` Digifender LLC, from the GitHub organization name. | Store accounts, privacy policy | Unverified; needed before M1-T5 publishes a privacy notice. |
-| Q5 | Production domain for the landing page and API. | M1-T5 | Blocks M1-T5 only. |
-| Q6 | Should the product name be "ItsThatGame"? Taken from the repository name `[Assumption]`. Trademark clearance not done. | Store listing, domain | Use as working name; clearance before M6. |
+| D1 | **Pricing.** Sell two products, both granting the `full_library` entitlement: a **$2.99/month** subscription and a **$19.99 lifetime** unlock. No annual plan at launch. Free tier per D6. The landing page tests $2.99/month, $4.99/month, and $19.99 lifetime, plus "only if free". | The pitch's $5/month ([User]) is high for time-killer games next to Apple Arcade and Netflix Games; the analysis favored $1.99–2.99/month or a $15–20 lifetime. A lifetime option answers subscription fatigue; the monthly plan keeps recurring revenue. $4.99 stays as a test arm so the pitch price is measured, not dismissed. | G1 readout per D2; after launch, if 90-day paid retention or conversion misses BRD §7 targets. |
+| D2 | **G1 rule.** *Go* if all three BRD §7 thresholds are met. *Iterate* (once) if signups reach at least half the threshold but any threshold is missed. *Stop* otherwise. On *Go*, if over 50% of paid-preference signups chose $4.99/month, raise the monthly price to $4.99; if lifetime was chosen by over 60%, launch lifetime-first in the paywall order. | Makes the gate executable without a person in the loop and ties price to evidence. | A second *Iterate* would be needed (then *Stop* and report). |
+| D3 | **Children.** Not directed at children; no Kids Category in v1; marketing may say "ad-free" and mention families, but makes no kid-safety or child-directed claims. | Avoids COPPA and Kids Category obligations that would reshape analytics, links, and submissions (`BC-5`). | Data shows parents are a dominant segment; then a legal review and a new ADR first. |
+| D4 | **Publisher.** Digifender LLC publishes the apps and owns the privacy policy. | It owns the GitHub organization; the only identified entity. `[Assumption]` that it can hold store developer accounts. | If store enrollment shows otherwise. |
+| D5 | **Domains.** M1 runs on Cloudflare-provided subdomains (Pages `*.pages.dev`, Worker `*.workers.dev`), so validation needs no domain purchase. A custom domain is registered in M6, chosen after the D7 name check. | Removes a blocker from M1; domain choice depends on name clearance. | — |
+| D6 | **Library size.** Launch with 8 games, 3 free and 5 premium. | Enough variety to justify payment; 3 free games give a real ad-free taste. Matches realistic build throughput for one operator with agents. | M3 throughput or M2 performance findings. |
+| D7 | **Name.** Keep "ItsThatGame" as the product name; run a trademark knockout search before M6 listings and rename if a conflict is found. | Repository name and pitch hook ("it's that game from the ad"). | Search finds a conflict. |
+| D8 | **Cadence.** Internal target of 2 new games per month after launch; no public promise until met for 3 consecutive months. | Retention needs new content; a public promise missed early would hurt trust. | Actual throughput after 3 months. |
+| D9 | **Offline grace.** 7 days beyond cached subscription expiry (`RULE-4`). | Covers a week of travel without making cancellation free for long. | Abuse or support data. |
 
-**Conflicts found:** one, the price point (Q1): the pitch ($5/month) and the shared
-analysis disagree. Not resolved by this task; M1 is designed to produce the data to
-resolve it.
+**Conflicts found:** one, the price point: the pitch ($5/month) versus the shared
+analysis. Resolved by D1 (lower launch price, $4.99 measured as a test arm) and D2.
+
+### Owner-held prerequisites
+
+These are not questions; they are credentials and accounts only the owner can create.
+Work that needs them is marked with the ID; everything else proceeds without them.
+
+| ID | Prerequisite | Needed by |
+|---|---|---|
+| P1 | Cloudflare account, and an API token available to the agent environment | M1-T5 |
+| P2 | Apple Developer Program and Google Play Console accounts for Digifender LLC (D4) | M4, M6 |
+| P3 | RevenueCat project connected to both stores | M4 |
+| P4 | macOS build capability (a Mac, or a macOS CI runner) for iOS builds | M2-T5 (iOS part), M6 |
 
 ---
 
@@ -350,7 +374,7 @@ resolve it.
 | Risk | Effect | Mitigation in plan |
 |---|---|---|
 | Too few people pay for simple games (`BO-1`) | Product not viable | M1 before significant build; G1 gate |
-| Burst play, quick churn | Subscription revenue decays | Lifetime option (Q1); content cadence (M7); submissions feed the pipeline |
+| Burst play, quick churn | Subscription revenue decays | Lifetime option (D1); content cadence (M7); submissions feed the pipeline |
 | Acquisition cost exceeds customer value | Unprofitable growth | Organic video first; first-party attribution (`FR-WL-4`) to measure channel yield |
 | IP claims from close copies | Takedown, legal cost | `BC-4`, originality checklist `RULE-9` before each release |
 | Store rejection (e.g. minimum functionality, subscription value) | Launch delay | Bundled native-feeling games (ADR-0007); TestFlight review early in M6 |
@@ -363,6 +387,6 @@ resolve it.
 
 **M1 Demand validation**, starting with **M1-T1** (monorepo bootstrap), which has no
 prerequisites. M1-T2 to M1-T4 can then proceed locally against Wrangler's local D1.
-**M1-T5 needs the owner** to provide Cloudflare account access and a domain (Q5) and to
-confirm the publishing entity for the privacy notice (Q4). M1 is complete when the four
+**M1-T5 needs prerequisite P1** (Cloudflare credentials); no domain is needed (D5) and
+the privacy notice names Digifender LLC (D4). M1 is complete when the four
 M1 acceptance items pass in production; M2 may proceed in parallel at any time.

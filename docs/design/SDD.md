@@ -73,7 +73,7 @@ flowchart TB
 
 - RevenueCat is configured with one entitlement, `full_library`, attached to every
   product in the current offering (monthly, lifetime, or both). The app checks
-  entitlements, never product IDs, so the business model (Q1) can change remotely without
+  entitlements, never product IDs, so prices and products (Roadmap D1, D2) can change remotely without
   an app release (`BC-6`).
 - Gate: `isUnlocked(game) = game.tier == "free" || state in {entitled, entitled_cached}`.
 - The entitlement service refreshes on app start and foreground, caches

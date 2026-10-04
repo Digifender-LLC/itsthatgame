@@ -24,7 +24,7 @@ measurements) without an ADR.
 
 | ID | Requirement | Pri | Source | Design | MS | Verification |
 |---|---|---|---|---|---|---|
-| `FR-WL-1` | The landing page shall present the value proposition, a price-preference choice (options per [BRD §6](BRD.md#6-business-model-options) plus "only if it were free"), an email field, and a consent checkbox linked to the privacy notice. | Must | `CAP-1` | HLD §4.1 | M1 | T: Playwright renders all elements; I: copy review |
+| `FR-WL-1` | The landing page shall present the value proposition, a price-preference choice (test arms per [BRD §6](BRD.md#6-business-model-options), including "only if it were free"), an email field, and a consent checkbox linked to the privacy notice. | Must | `CAP-1` | HLD §4.1 | M1 | T: Playwright renders all elements; I: copy review |
 | `FR-WL-2` | The system shall store a waitlist entry only when the email is syntactically valid, consent is given, and the bot check passes. | Must | `RULE-6` | LLD §2 | M1 | T: Worker tests per failure case |
 | `FR-WL-3` | Repeat signups with the same normalized email shall not create duplicates and shall return the same success response as a first signup. | Must | `RULE-6` | LLD §2, §5 | M1 | T: Worker test, two signups → one row |
 | `FR-WL-4` | The system shall record first-party source attribution (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, and referrer host) with each entry, without third-party pixels. | Must | `BO-4` | LLD §2 | M1 | T: stored fields match request; I: no third-party scripts on page |
@@ -102,7 +102,7 @@ measurements) without an ADR.
 
 | ID | Requirement | Pri | Source | Design | MS | Verification |
 |---|---|---|---|---|---|---|
-| `DATA-1` | Waitlist entries store only: normalized email, price preference, consent timestamp and notice version, attribution fields (`FR-WL-4`), created/updated timestamps. Retained until removal request or 12 months after the G1 decision `[Proposal]`, whichever is first. | Must | `CAP-1` | LLD §5 | M1 | I: schema review; T: deletion |
+| `DATA-1` | Waitlist entries store only: normalized email, price preference, consent timestamp and notice version, attribution fields (`FR-WL-4`), created/updated timestamps. Retained until removal request or 12 months after the G1 decision, whichever is first. | Must | `CAP-1` | LLD §5 | M1 | I: schema review; T: deletion |
 | `DATA-2` | Submissions store: server ID, client ID, SHA-256 hash of install ID, description, optional link and "where seen", status, public note, timestamps. No names, emails, or IP addresses are stored with submissions. | Must | ADR-0008 | LLD §5 | M5 | I: schema review |
 | `DATA-3` | Analytics events are stored only as aggregates or with a rotating install-scoped ID, retained ≤ 13 months `[Proposal]`. | Should | `FR-AN-1` | TDD §9 | M6 | I: storage configuration review |
 | `DATA-4` | On-device data (progress, settings, entitlement cache, submission outbox, install ID) stays on device, is not backed up to any server we operate, and is removed on uninstall. | Must | ADR-0006 | SDD §3 | M2 | I: storage review |

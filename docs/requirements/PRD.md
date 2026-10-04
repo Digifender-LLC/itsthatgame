@@ -19,7 +19,7 @@ measures demand. Serves outcomes `BO-1`…`BO-4` in the [BRD](BRD.md#3-business-
 | P1 Ad-weary player | Adult who plays short casual games and is tired of ads | Play without interruptions | `[User]` |
 | P2 Ad-curious player | Saw a game in an ad and wants to play *that* game | The game the ad showed | `[User]` ("fake ad" hook) |
 | P3 Offline player | Travels, flies, deploys, or has poor signal | Games that work with no network | `[Proposal]` |
-| P4 Parent | Buys or installs games for a child and dislikes ads in kids' games | A clean, ad-free option | `[Proposal]`; marketing to this persona is gated by `BC-5` |
+| P4 Parent | Buys or installs games for a child and dislikes ads in kids' games | A clean, ad-free option | `[Proposal]`; marketed as ad-free only, no child-directed claims (`BC-5`) |
 | P5 Prospect | Watches a short video and visits the landing page | Quick understanding, easy signup | `[Delegated]` (M1) |
 | P6 Operator | The owner, triaging submissions and reading metrics | Low-effort triage and clear numbers | `[Delegated]` |
 

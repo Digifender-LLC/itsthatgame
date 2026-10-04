@@ -51,7 +51,7 @@ export interface ScopedStorage {
 
 ## 2. Waitlist API (`IF-1`)
 
-Base URL: `https://<api-domain>` (Q5). JSON over HTTPS. CORS allows only the landing
+Base URL: the Worker's `*.workers.dev` URL in M1, a custom domain from M6 (Roadmap D5). JSON over HTTPS. CORS allows only the landing
 page origin.
 
 ### `POST /v1/waitlist`
@@ -61,7 +61,7 @@ Request:
 ```json
 {
   "email": "person@example.com",
-  "pricePreference": "monthly_299 | monthly_499 | lifetime_1499 | free_only",
+  "pricePreference": "monthly_299 | monthly_499 | lifetime_1999 | free_only",
   "consent": true,
   "consentNoticeVersion": "2026-10-01",
   "attribution": { "utmSource": "tiktok", "utmMedium": "video", "utmCampaign": "ad-game-1", "utmContent": "v3", "referrerHost": "www.tiktok.com" },
@@ -160,7 +160,7 @@ Migration `0001_init.sql` (M1-T3) and `0002_submissions.sql` (M5):
 CREATE TABLE waitlist_entries (
   id                     TEXT PRIMARY KEY,            -- UUIDv4
   email_normalized       TEXT NOT NULL UNIQUE,
-  price_preference       TEXT NOT NULL CHECK (price_preference IN ('monthly_299','monthly_499','lifetime_1499','free_only')),
+  price_preference       TEXT NOT NULL CHECK (price_preference IN ('monthly_299','monthly_499','lifetime_1999','free_only')),
   consent_at             TEXT NOT NULL,               -- ISO 8601 UTC
   consent_notice_version TEXT NOT NULL,
   utm_source TEXT, utm_medium TEXT, utm_campaign TEXT, utm_content TEXT, referrer_host TEXT,

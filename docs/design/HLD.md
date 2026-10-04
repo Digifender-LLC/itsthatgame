@@ -130,7 +130,7 @@ client (`RULE-11`).
 |---|---|---|---|---|
 | Local | Vite dev server | `wrangler dev` | Local D1 (SQLite) | Browser build, simulators/emulators |
 | Preview | Cloudflare Pages preview per PR | Worker `preview` env | `itsthatgame-preview` D1 | TestFlight / Play internal testing builds |
-| Production | Cloudflare Pages production | Worker `production` env on the production domain (Q5) | `itsthatgame-prod` D1, Analytics Engine dataset | App Store, Google Play |
+| Production | Cloudflare Pages production | Worker `production` env (`*.workers.dev` in M1, custom domain from M6; Roadmap D5) | `itsthatgame-prod` D1, Analytics Engine dataset | App Store, Google Play |
 
-All Cloudflare resources live in one account owned by the publishing entity (Q4). Details
+All Cloudflare resources live in one account owned by the publisher, Digifender LLC (Roadmap D4). Details
 in [TDD §7](TDD.md#7-environments-configuration-and-release).

@@ -55,11 +55,16 @@ they do not restate it with different wording.
    agent-made decision as approved by the project owner.
 5. **Conflicts.** If sources disagree, do not silently pick the newest. Resolve in this
    order: explicit owner decision → this file → accepted ADRs → canonical document for
-   that subject → implementation evidence. Record unresolved conflicts in the roadmap's
-   "Open questions and conflicts" section and, if they block work, ask the owner.
-6. **Superseded documents** stay in the repo with a banner at the top linking to the
+   that subject → implementation evidence.
+6. **Decide, don't ask.** The owner has made agents the final authority on this project
+   and does not want questions (2026-10-04). When something is unresolved, make the most
+   conservative reasonable decision, record it in the roadmap's "Decisions made under
+   delegated authority" section (or an ADR if architectural), tagged `[Delegated]`, and
+   continue. Only owner-held credentials and accounts (the roadmap's `P*` prerequisites)
+   may be requested, and only when work is actually blocked on them.
+7. **Superseded documents** stay in the repo with a banner at the top linking to the
    replacement. Do not delete useful history.
-7. **Run `python3 scripts/check_docs.py`** after editing anything under `docs/` or this
+8. **Run `python3 scripts/check_docs.py`** after editing anything under `docs/` or this
    file. It checks relative links, requirement-ID references, and roadmap coverage of
    must-have requirements.
 
