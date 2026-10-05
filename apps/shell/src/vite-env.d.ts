@@ -7,4 +7,5 @@ interface ImportMetaEnv {
   readonly VITE_PRIVACY_URL?: string;
   readonly VITE_TERMS_URL?: string;
   readonly VITE_SUPPORT_URL?: string;
+  readonly VITE_ALLOW_DEV_PURCHASES?: string;
 }

@@ -10,6 +10,8 @@ export interface LibraryProps {
   onSettings(): void;
   onRequest(): void;
   notice?: string | null;
+  /** Optional one-line progress per slug, e.g. "Level 7 · ★ 15" or "Best 41". */
+  progress?: Record<string, string>;
 }
 
 /** FR-APP-1: every catalog game with icon, name and locked/unlocked state. */
@@ -37,6 +39,7 @@ export function Library(props: LibraryProps) {
         {props.games.map((game) => {
           const locked = !props.isUnlocked(game);
           const fresh = props.isNew(game);
+          const prog = props.progress?.[game.slug];
           const label = [game.title, locked ? "locked" : null, fresh ? "new" : null]
             .filter(Boolean)
             .join(", ");
@@ -51,6 +54,9 @@ export function Library(props: LibraryProps) {
               >
                 <GameIcon icon={game.icon} />
                 <span class="tile-title">{game.title}</span>
+                <span class="tile-progress" aria-hidden="true">
+                  {prog ?? (locked ? "" : "Tap to play")}
+                </span>
                 <span class="badges">
                   {fresh && <span class="badge new">New</span>}
                   {locked && (

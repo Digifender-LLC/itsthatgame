@@ -2,7 +2,7 @@
 // `full_library` entitlement only, never product IDs, so products can change remotely.
 import { Capacitor } from "@capacitor/core";
 import type { KeyValueBackend } from "@itg/game-sdk";
-import { ENTITLEMENT_ID, RC_ANDROID_KEY, RC_IOS_KEY } from "../config";
+import { ALLOW_DEV_PURCHASES, ENTITLEMENT_ID, RC_ANDROID_KEY, RC_IOS_KEY } from "../config";
 import type { StoreInfo } from "./entitlementMachine";
 
 export interface Offer {
@@ -150,6 +150,17 @@ export class DevAdapter implements PurchaseAdapter {
 }
 
 /** RevenueCat on iOS/Android; the DevAdapter in a plain browser. */
-export function createAdapter(kv: KeyValueBackend): PurchaseAdapter {
-  return Capacitor.isNativePlatform() ? new RevenueCatAdapter() : new DevAdapter(kv);
+/**
+ * RevenueCat on native builds. The DevAdapter (a no-charge "sandbox" unlock) runs in the
+ * browser, and on native only in builds made with VITE_ALLOW_DEV_PURCHASES=1, which the CI
+ * debug APK sets so sideload testers can open premium games (Roadmap D16). Release builds
+ * never set it, so they fail closed to RevenueCat.
+ */
+export function createAdapter(
+  kv: KeyValueBackend,
+  opts: { native?: boolean; allowDev?: boolean } = {},
+): PurchaseAdapter {
+  const native = opts.native ?? Capacitor.isNativePlatform();
+  const allowDev = opts.allowDev ?? ALLOW_DEV_PURCHASES;
+  return native && !allowDev ? new RevenueCatAdapter() : new DevAdapter(kv);
 }
