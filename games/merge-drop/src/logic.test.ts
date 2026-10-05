@@ -1,15 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
   COLS,
+  GOALS,
   ROWS,
+  danger,
   drop,
   findMerge,
+  goalIndex,
   isMergeState,
   maxTile,
   newGame,
+  newGoals,
   rngNext,
   seedFromRun,
   spawnPool,
+  wouldMerge,
   type MergeState,
 } from "./logic";
 
@@ -189,5 +194,32 @@ describe("merge-drop logic", () => {
       n++;
     }
     expect(s.over).toBe(true);
+  });
+});
+
+describe("goal ladder and UI helpers", () => {
+  it("indexes goals and reports newly reached ones", () => {
+    expect(goalIndex(16)).toBe(0);
+    expect(goalIndex(32)).toBe(1);
+    expect(goalIndex(128)).toBe(3);
+    expect(goalIndex(1 << 20)).toBe(GOALS.length);
+    expect(newGoals(16, 64)).toEqual([32, 64]);
+    expect(newGoals(64, 64)).toEqual([]);
+    expect(newGoals(64, 256)).toEqual([128, 256]);
+  });
+  it("rates column danger", () => {
+    expect(danger(0)).toBe(0);
+    expect(danger(ROWS - 3)).toBe(0);
+    expect(danger(ROWS - 2)).toBe(1);
+    expect(danger(ROWS)).toBe(2);
+    expect(danger(ROWS + 1)).toBe(3);
+  });
+  it("predicts merges for the ghost tile", () => {
+    const cols = [[4], [8, 2], [], [], []];
+    expect(wouldMerge(cols, 0, 4)).toBe(true); // lands on the 4
+    expect(wouldMerge(cols, 0, 2)).toBe(true); // touches the 2 on its right
+    expect(wouldMerge(cols, 2, 8)).toBe(true); // touches the 8 on its left
+    expect(wouldMerge(cols, 2, 2)).toBe(false);
+    expect(wouldMerge(cols, 3, 2)).toBe(false);
   });
 });

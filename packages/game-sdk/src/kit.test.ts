@@ -192,6 +192,7 @@ describe("createRunGame", () => {
     await flush();
     const saved = JSON.parse(ctx.backend.data.get("game:stub-run:progress")!);
     expect(saved).toEqual({ best: 3, runs: 1 });
+    expect(ctx.levels).toEqual([1]);
     expect(ctx.sounds).toContain("fail");
     game.destroy();
   });

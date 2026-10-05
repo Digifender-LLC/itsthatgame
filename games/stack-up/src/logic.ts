@@ -146,3 +146,45 @@ export function isStackState(v: unknown): v is StackState {
     typeof s.mover.x === "number"
   );
 }
+
+// ---- Presentation helpers (pure, so they are tested and shared by the renderer) ----------
+
+/** Every this-many floors the run shows a milestone banner and confetti. */
+export const MILESTONE_EVERY = 10;
+/** Major pentatonic scale degrees, in semitones above the root. */
+export const PENTATONIC = [0, 2, 4, 7, 9] as const;
+const ROOT_PITCH = 0.75;
+/** The host clamps pitch to 3x; two octaves above the root stays inside that. */
+const MAX_SEMITONES = 24;
+
+/** True when `floor` (the score just reached) is a milestone floor. */
+export function isMilestone(floor: number): boolean {
+  return floor > 0 && floor % MILESTONE_EVERY === 0;
+}
+
+/** The next milestone floor above `floor`. */
+export function nextMilestone(floor: number): number {
+  return (Math.floor(floor / MILESTONE_EVERY) + 1) * MILESTONE_EVERY;
+}
+
+/** Semitones above the root for the Nth consecutive perfect (streak >= 1): climbs the scale. */
+export function perfectSemitones(streak: number): number {
+  const k = Math.max(0, Math.floor(streak) - 1);
+  const semis = PENTATONIC[k % PENTATONIC.length]! + 12 * Math.floor(k / PENTATONIC.length);
+  return Math.min(MAX_SEMITONES, semis);
+}
+
+/** Playback pitch multiplier for the Nth consecutive perfect drop. */
+export function perfectPitch(streak: number): number {
+  return ROOT_PITCH * Math.pow(2, perfectSemitones(streak) / 12);
+}
+
+/** Sky progress: 0 = day, 1 = dusk, 2 = night, continuous in the tower height. */
+export function skyProgress(floors: number): number {
+  return Math.max(0, Math.min(2, floors / 20));
+}
+
+/** Block hue (degrees) for a floor: shifts gradually all the way around as the tower rises. */
+export function hueAt(floor: number): number {
+  return (205 + floor * 7) % 360;
+}

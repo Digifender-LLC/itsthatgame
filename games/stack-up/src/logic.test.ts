@@ -7,7 +7,13 @@ import {
   START_WIDTH,
   STREAK_FOR_GROWTH,
   drop,
+  hueAt,
+  isMilestone,
   newGame,
+  nextMilestone,
+  perfectPitch,
+  perfectSemitones,
+  skyProgress,
   speedAt,
   step,
   type StackState,
@@ -168,5 +174,49 @@ describe("stack-up logic", () => {
       return JSON.stringify({ s, results });
     };
     expect(run()).toBe(run());
+  });
+});
+
+describe("stack-up presentation helpers", () => {
+  it("flags every tenth floor as a milestone", () => {
+    expect([0, 1, 9, 10, 11, 20, 30].map(isMilestone)).toEqual([
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+    ]);
+    expect(nextMilestone(0)).toBe(10);
+    expect(nextMilestone(9)).toBe(10);
+    expect(nextMilestone(10)).toBe(20);
+  });
+
+  it("climbs the pentatonic scale with the streak and stays within the pitch clamp", () => {
+    expect([1, 2, 3, 4, 5, 6].map(perfectSemitones)).toEqual([0, 2, 4, 7, 9, 12]);
+    let prev = 0;
+    for (let s = 1; s <= 40; s++) {
+      const p = perfectPitch(s);
+      expect(p).toBeGreaterThanOrEqual(prev);
+      expect(p).toBeLessThanOrEqual(3);
+      prev = p;
+    }
+    expect(perfectPitch(1)).toBeCloseTo(0.75);
+  });
+
+  it("moves the sky from day to dusk to night and caps there", () => {
+    expect(skyProgress(0)).toBe(0);
+    expect(skyProgress(20)).toBe(1);
+    expect(skyProgress(40)).toBe(2);
+    expect(skyProgress(500)).toBe(2);
+  });
+
+  it("shifts hue gradually and keeps it in range", () => {
+    for (let i = 0; i < 200; i++) {
+      expect(hueAt(i)).toBeGreaterThanOrEqual(0);
+      expect(hueAt(i)).toBeLessThan(360);
+    }
+    expect(hueAt(1)).not.toBe(hueAt(0));
   });
 });

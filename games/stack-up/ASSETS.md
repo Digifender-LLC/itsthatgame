@@ -1,7 +1,6 @@
 # Stack Up assets
 
-All visuals are drawn procedurally at runtime with Canvas 2D (rounded rectangles, text and
-the shared colorblind-safe palette from `@itg/game-sdk`). Sounds are synthesized by the app
+All visuals are drawn procedurally at runtime with Canvas 2D (polygons, gradients, text and the shared juice helpers from `@itg/game-sdk`). Sounds are synthesized by the app
 shell through `ctx.audio.play`. There are no image, font, or audio files in this package
 and no third-party assets.
 

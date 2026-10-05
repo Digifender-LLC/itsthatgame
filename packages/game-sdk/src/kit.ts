@@ -1303,6 +1303,8 @@ export function createRunGame(cfg: RunGameConfig): GameFactory {
       newBest = sc > progress.best && sc > 0;
       if (newBest) progress.best = sc;
       save();
+      // Analytics `game_complete_level` counts finished runs for endless games.
+      host.events.levelComplete(progress.runs);
       host.audio.play("fail");
       host.haptics.impact("heavy");
       juice.shake.kick(0.6);
@@ -1359,6 +1361,12 @@ export function createRunGame(cfg: RunGameConfig): GameFactory {
       if (ctl.status() === "ready") {
         const t = clock / 1000;
         g.save();
+        // scrim so the title reads over any scene
+        const sw = Math.min(play.w - 32, 300);
+        const sh = progress.best > 0 ? 130 : 104;
+        roundRectPath(g, play.x + (play.w - sw) / 2, play.y + play.h * 0.28 - 40, sw, sh, 22);
+        g.fillStyle = "rgba(0,0,0,0.45)";
+        g.fill();
         g.textAlign = "center";
         g.textBaseline = "middle";
         g.fillStyle = theme.text;

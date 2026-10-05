@@ -209,3 +209,37 @@ export function isMergeState(v: unknown): v is MergeState {
     typeof s.over === "boolean"
   );
 }
+
+// ---- goal ladder and helpers for the UI ------------------------------------------
+
+/** "Highest tile" goal ladder: each new highest tile on this list is a celebration. */
+export const GOALS: readonly number[] = [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384];
+
+/** Index of the first goal not yet reached by a board whose highest tile is `top`. */
+export function goalIndex(top: number): number {
+  let i = 0;
+  while (i < GOALS.length && top >= GOALS[i]!) i++;
+  return i;
+}
+
+/** Goals newly reached when the highest tile grows from `before` to `after`. */
+export function newGoals(before: number, after: number): number[] {
+  return GOALS.filter((g) => before < g && after >= g);
+}
+
+/** Column fullness: 0 = safe, 1 = getting tall, 2 = one tile from overflow, 3 = overflowing. */
+export function danger(height: number): 0 | 1 | 2 | 3 {
+  if (height > ROWS) return 3;
+  if (height === ROWS) return 2;
+  return height >= ROWS - 2 ? 1 : 0;
+}
+
+/** Would dropping `value` into `col` touch an equal tile (so it will merge)? */
+export function wouldMerge(cols: number[][], col: number, value: number): boolean {
+  const row = cols[col]?.length ?? 0;
+  return (
+    cols[col]?.[row - 1] === value ||
+    cols[col - 1]?.[row] === value ||
+    cols[col + 1]?.[row] === value
+  );
+}

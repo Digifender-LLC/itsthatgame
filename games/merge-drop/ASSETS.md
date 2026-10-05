@@ -1,7 +1,7 @@
 # Merge Drop assets
 
 All visuals are drawn procedurally at runtime with Canvas 2D (rounded rectangles, text and
-the shared colorblind-safe palette from `@itg/game-sdk`). Sounds are synthesized by the app
+our own tile palette, particles from the SDK juice kit). Sounds are synthesized by the app
 shell through `ctx.audio.play`. There are no image, font, or audio files in this package
 and no third-party assets.
 
