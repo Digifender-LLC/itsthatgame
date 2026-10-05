@@ -4,3 +4,4 @@ docs/
 dist/
 coverage/
 .wrangler/
+apps/shell/android/
