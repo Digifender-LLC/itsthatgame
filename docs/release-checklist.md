@@ -11,6 +11,9 @@ release PR and tick each item with evidence.
 - [ ] Catalog check passes: every releasable game has ORIGINALITY.md and QA.md
       (`FR-GAME-2`).
 - [ ] Bundle-size report within budget (`NFR-3`).
+- [ ] The release build environment does **not** set `VITE_ALLOW_DEV_PURCHASES`, and sets
+      the RevenueCat key for the platform (Roadmap D16). A store build with the sandbox
+      unlock would give premium games away.
 
 ## Manual
 

@@ -25,3 +25,4 @@ the owner's delegation; the owner has not reviewed it and may overturn it with a
 | [0006](0006-no-accounts-install-scoped-identity.md) | No user accounts in MVP; install-scoped identity | Accepted | `[Delegated]` |
 | [0007](0007-games-bundled-in-binary.md) | Games bundled in the app binary | Accepted | `[Delegated]` |
 | [0008](0008-text-only-moderated-submissions.md) | Text-only, private, moderated submissions | Accepted | `[Delegated]` |
+| [0009](0009-android-first-ios-deferred.md) | Android first; iOS deferred | Accepted | `[User]` direction, formalized `[Delegated]` |
