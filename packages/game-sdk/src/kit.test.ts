@@ -15,6 +15,7 @@ import { fakeContext, installFakeCanvas } from "./testing";
 
 const THEME = {
   bg: "#101820",
+  bg2: "#000000",
   panel: "#203040",
   text: "#FFFFFF",
   muted: "#AABBCC",
