@@ -24,11 +24,50 @@ export interface ScopedStorage {
   remove(key: string): Promise<void>;
 }
 
-export type Sfx = "tap" | "move" | "success" | "fail" | "win" | "pop";
+export type Sfx =
+  | "tap"
+  | "move"
+  | "success"
+  | "fail"
+  | "win"
+  | "pop"
+  | "select"
+  | "drop"
+  | "combo"
+  | "perfect"
+  | "star"
+  | "unlock"
+  | "whoosh"
+  | "bump";
+
+/** Every effect name, for hosts and tests. */
+export const SFX_NAMES: readonly Sfx[] = [
+  "tap",
+  "move",
+  "success",
+  "fail",
+  "win",
+  "pop",
+  "select",
+  "drop",
+  "combo",
+  "perfect",
+  "star",
+  "unlock",
+  "whoosh",
+  "bump",
+];
+
+export interface SfxOptions {
+  /** Pitch multiplier, e.g. 1.12 per combo step (clamped by the host to 0.5..3). */
+  pitch?: number;
+  /** Volume multiplier 0..1 (default 1). */
+  volume?: number;
+}
 
 export interface AudioFacade {
   /** Short synthesized effect; no-op when sound effects are disabled. */
-  play(sfx: Sfx): void;
+  play(sfx: Sfx, opts?: SfxOptions): void;
 }
 
 export interface Haptics {
@@ -186,7 +225,11 @@ export interface PointerPoint {
   y: number;
 }
 
-/** Normalized pointer input in CSS pixels relative to the element. Returns a disposer. */
+/**
+ * Normalized pointer input in CSS pixels relative to the element. Tracks one finger at a
+ * time (a second finger is ignored), captures it so drags continue outside the element,
+ * and reports pointercancel as `up`. Returns a disposer.
+ */
 export function onPointer(
   el: HTMLElement,
   handlers: {
@@ -195,20 +238,40 @@ export function onPointer(
     up?(p: PointerPoint): void;
   },
 ): () => void {
+  let active: number | null = null;
   const pos = (e: PointerEvent): PointerPoint => {
     const r = el.getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
-  const down = (e: PointerEvent) => handlers.down?.(pos(e));
-  const move = (e: PointerEvent) => handlers.move?.(pos(e));
-  const up = (e: PointerEvent) => handlers.up?.(pos(e));
+  const idOf = (e: PointerEvent) => (typeof e.pointerId === "number" ? e.pointerId : 1);
+  const down = (e: PointerEvent) => {
+    if (active !== null && active !== idOf(e)) return;
+    active = idOf(e);
+    try {
+      el.setPointerCapture?.(active);
+    } catch {
+      // synthetic events in tests have no capturable pointer
+    }
+    handlers.down?.(pos(e));
+  };
+  const move = (e: PointerEvent) => {
+    if (active !== null && active !== idOf(e)) return;
+    handlers.move?.(pos(e));
+  };
+  const up = (e: PointerEvent) => {
+    if (active !== null && active !== idOf(e)) return;
+    active = null;
+    handlers.up?.(pos(e));
+  };
   el.addEventListener("pointerdown", down);
   el.addEventListener("pointermove", move);
   el.addEventListener("pointerup", up);
+  el.addEventListener("pointercancel", up);
   return () => {
     el.removeEventListener("pointerdown", down);
     el.removeEventListener("pointermove", move);
     el.removeEventListener("pointerup", up);
+    el.removeEventListener("pointercancel", up);
   };
 }
 
@@ -240,3 +303,6 @@ export const PIECE_COLORS = [
 
 /** Distinct glyphs drawn on pieces so color is never the only cue (NFR-4). */
 export const PIECE_GLYPHS = ["●", "▲", "■", "◆", "★", "✚", "⬟"] as const;
+
+export * from "./juice";
+export * from "./kit";
