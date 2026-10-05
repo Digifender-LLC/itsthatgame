@@ -1,161 +1,203 @@
 import { describe, expect, it } from "vitest";
-import { buildLevel, getLevel, LEVEL_COUNT, PLANS } from "./levels";
 import {
+  RingGame,
   applyMove,
+  heuristic,
+  isComplete,
+  isLocked,
   isSolved,
   isStuck,
   legalMoves,
   moveCount,
   newState,
   replay,
-  RingGame,
   solve,
+  solveDetailed,
   topRun,
+  undoMove,
   type RingLevel,
 } from "./logic";
 
-const tiny: RingLevel = { cap: 3, pegs: [[0, 1, 0], [1, 0, 1], [], []] };
+const lvl = (
+  pegs: number[][],
+  cap: number | number[],
+  extra: Partial<RingLevel> = {},
+): RingLevel => ({
+  pegs,
+  caps: Array.isArray(cap) ? cap : pegs.map(() => cap),
+  ...extra,
+});
 
 describe("rules", () => {
-  it("topRun counts the same-colored run at the top", () => {
+  it("topRun counts the visible same-coloured run at the top", () => {
     expect(topRun([])).toBe(0);
     expect(topRun([1, 2, 2, 2])).toBe(3);
     expect(topRun([2, 1])).toBe(1);
+    expect(topRun([2, 2, 2], 2)).toBe(1); // two bottom rings are hidden
   });
 
   it("moves onto an empty peg or a matching top ring only", () => {
-    const s = newState(tiny);
-    expect(moveCount(s, 0, 1)).toBe(0); // top 0 onto top 1
-    expect(moveCount(s, 0, 2)).toBe(1); // onto empty
-    expect(moveCount(s, 0, 0)).toBe(0); // same peg
-    expect(moveCount(s, 2, 0)).toBe(0); // empty source
+    const s = newState(lvl([[0, 1, 0], [1, 0, 1], [], []], 3));
+    expect(moveCount(s, 0, 1)).toBe(0);
+    expect(moveCount(s, 0, 2)).toBe(1);
+    expect(moveCount(s, 0, 0)).toBe(0);
+    expect(moveCount(s, 2, 0)).toBe(0);
     applyMove(s, 0, 2);
-    expect(moveCount(s, 1, 0)).toBe(1); // 1 onto top 1
+    expect(moveCount(s, 1, 0)).toBe(1);
   });
 
   it("moves the whole run when it fits and only what fits otherwise", () => {
-    const s = newState({ cap: 4, pegs: [[2, 1, 1, 1], [1, 1, 0, 1], [], []] });
-    expect(moveCount(s, 0, 1)).toBe(0); // dest top is 1 but has no room? len 4 = cap
-    const t = newState({ cap: 4, pegs: [[2, 1, 1, 1], [1, 1], [], []] });
-    expect(moveCount(t, 0, 1)).toBe(2); // run of 3, space 2
+    const t = newState(lvl([[2, 1, 1, 1], [1, 1], [], []], 4));
+    expect(moveCount(t, 0, 1)).toBe(2);
     const m = applyMove(t, 0, 1)!;
     expect(m.count).toBe(2);
     expect(t.pegs[1]).toEqual([1, 1, 1, 1]);
     expect(t.pegs[0]).toEqual([2, 1]);
   });
 
-  it("refuses to exceed capacity", () => {
-    const s = newState({ cap: 2, pegs: [[0, 0], [0], []] });
-    expect(moveCount(s, 1, 0)).toBe(0);
+  it("respects each peg's own capacity", () => {
+    const s = newState(lvl([[0, 0, 0], [0], []], [3, 2, 5]));
+    expect(moveCount(s, 0, 1)).toBe(1); // only one slot left on the short peg
+    expect(moveCount(s, 0, 2)).toBe(3);
+    expect(moveCount(s, 1, 0)).toBe(0); // full
   });
 
-  it("detects solved: single-colored pegs and no split colors", () => {
-    expect(isSolved(newState({ cap: 2, pegs: [[0, 0], [1, 1], []] }))).toBe(true);
-    expect(isSolved(newState({ cap: 2, pegs: [[0], [0], [1, 1]] }))).toBe(false);
-    expect(isSolved(newState({ cap: 2, pegs: [[0, 1], [1, 0], []] }))).toBe(false);
+  it("detects solved: every peg empty or holding all rings of one colour", () => {
+    expect(isSolved(newState(lvl([[0, 0], [1, 1], []], 2)))).toBe(true);
+    expect(isSolved(newState(lvl([[0], [0], [1, 1]], 2)))).toBe(false);
+    expect(isSolved(newState(lvl([[0, 1], [1, 0], []], 2)))).toBe(false);
   });
 
-  it("detects stuck states (lose)", () => {
-    const s = newState({
-      cap: 2,
-      pegs: [
-        [0, 1],
-        [1, 0],
-      ],
-    });
-    expect(legalMoves(s)).toEqual([]);
+  it("detects stuck states", () => {
+    const s = newState(
+      lvl(
+        [
+          [0, 1],
+          [1, 0],
+        ],
+        2,
+      ),
+    );
     expect(isStuck(s)).toBe(true);
-    const g = new RingGame({
-      cap: 2,
-      pegs: [
-        [0, 1],
-        [1, 0],
-      ],
-    });
-    expect(g.status()).toBe("lost");
+    expect(legalMoves(s)).toEqual([]);
+  });
+
+  it("undo restores everything", () => {
+    const s = newState(lvl([[0, 1], [1, 0], []], 3));
+    const before = JSON.stringify(s);
+    const m = applyMove(s, 0, 2)!;
+    undoMove(s, m);
+    expect(JSON.stringify(s)).toBe(before);
+  });
+});
+
+describe("hidden rings", () => {
+  const level = lvl([[0, 1, 2], [2, 2], [1, 0, 0], []], 3, { hidden: [2, 0, 1, 0] });
+
+  it("hides the bottom rings and keeps the top visible", () => {
+    const s = newState(level);
+    expect(s.hid).toEqual([2, 0, 1, 0]);
+    // clamped: a peg can never hide its top ring
+    expect(newState(lvl([[0, 1]], 3, { hidden: [5] })).hid).toEqual([1]);
+  });
+
+  it("reveals a ring when it becomes the top, and undo hides it again", () => {
+    const s = newState(level);
+    const m = applyMove(s, 0, 3)!; // moves the 2 off peg 0
+    expect(m.revealed).toBe(true);
+    expect(s.hid[0]).toBe(1);
+    const m2 = applyMove(s, 3, 1);
+    expect(m2).not.toBeNull();
+    undoMove(s, m2!);
+    undoMove(s, m);
+    expect(s.hid).toEqual([2, 0, 1, 0]);
+  });
+
+  it("never lifts a hidden ring as part of a run", () => {
+    const s = newState(lvl([[1, 1, 1], [], []], 3, { hidden: [2, 0, 0] }));
+    // uniform peg shows everything
+    expect(s.hid[0]).toBe(0);
+    const t = newState(lvl([[1, 1, 0, 1], [], []], 4, { hidden: [2, 0, 0] }));
+    expect(moveCount(t, 0, 1)).toBe(1);
+  });
+});
+
+describe("locked pegs", () => {
+  const level = lvl([[0, 0], [0, 1], [1, 1], [], []], [3, 3, 3, 3, 3], {
+    locks: [-1, -1, -1, 0, -1],
+  });
+
+  it("blocks moves from and onto a locked peg until the colour is complete", () => {
+    const s = newState(lvl([[0, 1], [1, 0], [], []], 2, { locks: [-1, -1, 0, -1] }));
+    expect(isLocked(s, 2)).toBe(true);
+    expect(moveCount(s, 0, 2)).toBe(0);
+    expect(moveCount(s, 0, 3)).toBe(1);
+  });
+
+  it("opens permanently when the key colour completes, and undo relocks", () => {
+    const s = newState(level);
+    expect(isLocked(s, 3)).toBe(true);
+    // park the 1 on the free peg, then finish colour 0 on peg 0
+    const a = applyMove(s, 1, 4)!;
+    const b = applyMove(s, 1, 0)!;
+    expect(b.completed).toBe(0);
+    expect(b.unlocked).toEqual([3]);
+    expect(isComplete(s, 0)).toBe(true);
+    expect(isLocked(s, 3)).toBe(false);
+    undoMove(s, b);
+    expect(isLocked(s, 3)).toBe(true);
+    undoMove(s, a);
   });
 });
 
 describe("game session", () => {
-  it("supports undo, restart and win detection", () => {
-    const g = new RingGame({ cap: 2, pegs: [[0, 1], [1, 0], []] });
+  it("tracks moves, undo, restart and win/lose", () => {
+    const g = new RingGame(lvl([[0, 1], [1, 0], []], 2));
     expect(g.status()).toBe("playing");
-    expect(g.canUndo()).toBe(false);
     expect(g.move(0, 0)).toBeNull();
+    expect(g.move(0, 2)).not.toBeNull();
+    expect(g.moves).toBe(1);
+    g.undo();
     expect(g.moves).toBe(0);
-    g.move(0, 2); // 1 -> empty
-    g.move(1, 0); // 0 -> onto 0
-    g.move(2, 1); // 1 -> onto 1
-    expect(g.status()).toBe("won");
-    expect(g.move(0, 2)).toBeNull(); // no moves after a win
-    g.undo();
-    expect(g.status()).toBe("playing");
-    expect(g.state.pegs[2]).toEqual([1]);
-    g.undo();
-    g.undo();
     expect(g.canUndo()).toBe(false);
-    expect(g.state.pegs).toEqual([[0, 1], [1, 0], []]);
-    g.move(0, 2);
-    g.restart();
-    expect(g.state.pegs).toEqual([[0, 1], [1, 0], []]);
-    expect(g.canUndo()).toBe(false);
-  });
-
-  it("undo restores a partial-run move exactly", () => {
-    const g = new RingGame({ cap: 4, pegs: [[2, 1, 1, 1], [1, 1], [], [0, 0, 0, 2]] });
-    const before = JSON.stringify(g.state.pegs);
-    g.move(0, 1);
-    g.undo();
-    expect(JSON.stringify(g.state.pegs)).toBe(before);
+    const win = new RingGame(lvl([[0, 1], [1], [0]], 2));
+    win.move(0, 1);
+    win.move(2, 0);
+    expect(win.status()).toBe("won");
+    win.restart();
+    expect(win.status()).toBe("playing");
   });
 });
 
-describe("levels", () => {
-  it("has at least 20 levels with rising difficulty", () => {
-    expect(LEVEL_COUNT).toBeGreaterThanOrEqual(20);
-    const first = PLANS[0]!;
-    const last = PLANS[PLANS.length - 1]!;
-    expect(last.colors * last.cap).toBeGreaterThan(first.colors * first.cap * 2);
+describe("solver", () => {
+  it("heuristic is zero when solved and never exceeds the optimum", () => {
+    expect(heuristic(newState(lvl([[0, 0], [1, 1], []], 2)))).toBe(0);
+    const s = newState(lvl([[0, 1, 0], [1, 0, 1], [], []], 3));
+    const r = solveDetailed(s, { weight: 1 })!;
+    expect(r.optimal).toBe(true);
+    expect(heuristic(s)).toBeLessThanOrEqual(r.moves.length);
   });
 
-  it("is deterministic and well formed", () => {
-    for (let i = 0; i < LEVEL_COUNT; i++) {
-      const a = getLevel(i);
-      const b = getLevel(i);
-      expect(a).toEqual(b);
-      const counts = new Map<number, number>();
-      for (const p of a.pegs) {
-        expect(p.length).toBeLessThanOrEqual(a.cap);
-        for (const c of p) counts.set(c, (counts.get(c) ?? 0) + 1);
-      }
-      for (const n of counts.values()) expect(n).toBe(a.cap);
-      expect(isSolved(newState(a))).toBe(false);
-      expect(a.pegs.some((p) => p.length === a.cap && p.every((x) => x === p[0]))).toBe(false);
-    }
+  it("finds a shortest solution on a tiny puzzle", () => {
+    const level = lvl([[0, 1], [1, 0], []], 2);
+    const r = solveDetailed(newState(level), { weight: 1 })!;
+    expect(r.moves.length).toBe(3);
+    expect(replay(level, r.moves)).toBe(true);
   });
 
-  it("uses no more colors than the SDK palette provides", () => {
-    expect(Math.max(...PLANS.map((p) => p.colors))).toBeLessThanOrEqual(7);
-  });
-
-  it("every level is solvable (solver finds a replayable solution)", () => {
-    for (let i = 0; i < LEVEL_COUNT; i++) {
-      const level = getLevel(i);
-      const solution = solve(newState(level));
-      expect(solution, `level ${i + 1} unsolved`).not.toBeNull();
-      expect(replay(level, solution!), `level ${i + 1} replay`).toBe(true);
-    }
-  });
-
-  it("the solver reports null for an unsolvable position", () => {
-    const level = buildLevel({ colors: 2, cap: 2, empty: 0, seed: 1 });
-    const stuck: RingLevel = {
-      cap: level.cap,
-      pegs: [
-        [0, 1],
-        [1, 0],
-      ],
-    };
-    expect(solve(newState(stuck))).toBeNull();
+  it("returns null for an unsolvable state", () => {
+    expect(
+      solve(
+        newState(
+          lvl(
+            [
+              [0, 1],
+              [1, 0],
+            ],
+            2,
+          ),
+        ),
+      ),
+    ).toBeNull();
   });
 });

@@ -304,6 +304,9 @@ function hitButton(list: Button[], p: PointerPoint): Button | undefined {
   );
 }
 
+/** How long a level's intro banner stays up. */
+const INTRO_MS = 2600;
+
 /** Cancels a button press when the finger slides this far. */
 const DRAG_CANCEL_PX = 14;
 
@@ -797,7 +800,7 @@ export function createLevelGame(cfg: LevelGameConfig): GameFactory {
 
     const drawIntro = (g: CanvasRenderingContext2D) => {
       if (!intro || screen !== "play") return;
-      const DUR = 2600;
+      const DUR = INTRO_MS;
       if (introT > DUR) return;
       const { play } = frame();
       const inK = reduced() ? 1 : ease.outBack(clamp(introT / 300, 0, 1));
@@ -996,6 +999,8 @@ export function createLevelGame(cfg: LevelGameConfig): GameFactory {
       }
       const { play } = frame();
       if (!inside(play, p)) return;
+      // The first touch on the board fades the intro banner out early.
+      if (intro && introT > 400 && introT < INTRO_MS - 300) introT = INTRO_MS - 300;
       ctlGesture = true;
       (ctl.down ?? ctl.tap)?.call(ctl, p, play);
       afterStatusChange();
