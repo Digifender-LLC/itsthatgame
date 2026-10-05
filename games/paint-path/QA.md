@@ -4,10 +4,18 @@
 
 - [x] Conformance suite (`describeConformance`, FR-GAME-1): lifecycle, no leaked
       timers/frames/listeners/DOM, scoped storage only, no network.
-- [x] Level solvability (FR-GAME-2): `src/logic.test.ts` verifies all 24 levels with the
-      stored solution and an independent DFS solver, and replays the solution through the
-      game logic to a win.
-- [x] Logic unit tests: extend, backtrack, blocked moves, undo, restart, win detection.
+- [x] Level solvability (FR-GAME-2): `src/logic.test.ts` verifies all 60 levels with the
+      stored solution (independent verifier), replays it through `Board` to a win, runs the
+      search solver on every level up to 25 cells, and checks the stuck detector never fires
+      along a solution.
+- [x] Logic unit tests: extend, backtrack, blocked moves, undo, restart, win detection,
+      bends, crossings (axis and straight-through rules), portals, hints.
+- [x] Play-through test (`src/play.test.ts`): drags level 1 to a win via pointer events, 3
+      stars saved; fast-drag runs and diagonal resolution; star and pitch helpers.
+- [x] Level data equals deterministic generator output (`src/generate.test.ts`).
+- [x] Preview run (2026-10-05): levels 1-41 completed through real pointer drags in the
+      preview shell at 390x844; screenshots of level 1, worlds 2-5 intro levels checked.
+- [ ] Android-first feel (drag latency, haptics, sound mix): Blocked (P4)
 - [x] Input/resize/resume smoke test in `src/index.test.ts`.
 - [x] `pnpm --filter @itg/game-paint-path typecheck`, ESLint, Prettier.
 
