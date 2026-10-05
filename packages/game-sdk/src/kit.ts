@@ -467,14 +467,15 @@ export function createLevelGame(cfg: LevelGameConfig): GameFactory {
       const { hud } = frame();
       const bh = MIN_TOUCH;
       const by = hud.y + (HUD_H - bh) / 2;
-      const bw = 46;
+      const bw = 44;
+      const gap = 4;
       const list: Button[] = [
-        { id: "exit", icon: "back", x: hud.x + 8, y: by, w: bw, h: bh, enabled: true },
+        { id: "exit", icon: "back", x: hud.x + 6, y: by, w: bw, h: bh, enabled: true },
       ];
-      let x = hud.x + hud.w - 8 - bw;
+      let x = hud.x + hud.w - 6 - bw;
       list.push({ id: "restart", icon: "restart", x, y: by, w: bw, h: bh, enabled: true });
       if (ctl?.undo) {
-        x -= bw + 6;
+        x -= bw + gap;
         list.push({
           id: "undo",
           icon: "undo",
@@ -486,7 +487,7 @@ export function createLevelGame(cfg: LevelGameConfig): GameFactory {
         });
       }
       if (ctl?.hint) {
-        x -= bw + 6;
+        x -= bw + gap;
         list.push({
           id: "hint",
           icon: "hint",
@@ -497,7 +498,7 @@ export function createLevelGame(cfg: LevelGameConfig): GameFactory {
           enabled: ctl.status() === "playing" && !ctl.busy(),
         });
       }
-      x -= bw + 6;
+      x -= bw + gap;
       list.push({ id: "map", icon: "levels", x, y: by, w: bw, h: bh, enabled: true });
       return list;
     };
@@ -713,7 +714,7 @@ export function createLevelGame(cfg: LevelGameConfig): GameFactory {
       g.fillRect(hud.x, hud.y + hud.h, hud.w, 3);
       const buttons = hudButtons();
       for (const b of buttons) drawButton(g, theme, b, pressed === b.id);
-      const leftEdge = hud.x + 62;
+      const leftEdge = hud.x + 58;
       const rightEdge = Math.min(...buttons.filter((b) => b.id !== "exit").map((b) => b.x)) - 6;
       const info = ctl?.hudInfo?.();
       g.textAlign = "left";
@@ -724,7 +725,7 @@ export function createLevelGame(cfg: LevelGameConfig): GameFactory {
       g.fillText(label, leftEdge, hud.y + HUD_H / 2 - (info ? 9 : 0), rightEdge - leftEdge);
       if (info) {
         g.fillStyle = theme.muted;
-        g.font = `600 12px ${FONT}`;
+        g.font = `600 ${info.length > 18 ? 11 : 12}px ${FONT}`;
         g.fillText(info, leftEdge, hud.y + HUD_H / 2 + 12, rightEdge - leftEdge);
       }
     };
