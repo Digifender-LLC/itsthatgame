@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ItsThatGame</string>
+    <string name="title_activity_main">ItsThatGame</string>
+    <string name="package_name">com.digifender.itsthatgame</string>
+    <string name="custom_url_scheme">com.digifender.itsthatgame</string>
+</resources>

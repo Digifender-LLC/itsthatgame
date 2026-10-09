@@ -10,6 +10,7 @@ export default tseslint.config(
       "**/.wrangler/**",
       "**/node_modules/**",
       "**/worker-configuration.d.ts",
+      "apps/shell/android/**",
     ],
   },
   js.configs.recommended,

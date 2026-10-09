@@ -4,21 +4,31 @@
 Android SDK for Android; P2 for TestFlight / Play distribution.
 **Unblocks:** M2-T5 device checklist, M6 release.
 
-## 1. Generate native projects (not committed; see `.gitignore`)
+## 1. Native projects
+
+**Android (committed, Roadmap D15).** `apps/shell/android/` is in the repository, already
+locked to portrait with `minSdkVersion 26` (`NFR-5`), the ItsThatGame launcher icon and
+splash (rendered by `apps/shell/scripts/render-android-assets.mjs`), and a version code
+taken from `ITG_VERSION_CODE`. To build a debug APK locally (JDK 21 and the Android SDK
+with platform 36):
 
 ```sh
 pnpm install
 pnpm --filter @itg/shell build
-cd apps/shell
-pnpm exec cap add ios
-pnpm exec cap add android
-pnpm exec cap sync
+pnpm --filter @itg/shell exec cap sync android
+cd apps/shell/android && ./gradlew assembleDebug
+# → app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Set the RevenueCat keys and API base before `build` (see `apps/shell/.env.example`).
-Lock orientation to portrait in Xcode (General › Deployment Info) and in
-`android/app/src/main/AndroidManifest.xml` (`android:screenOrientation="portrait"`).
-Minimum versions (`NFR-5`): iOS 16.0 deployment target; Android `minSdkVersion 26`.
+CI does the same on every PR ([android-sideload.md](android-sideload.md)).
+
+**iOS (deferred, [ADR-0009](../adr/0009-android-first-ios-deferred.md)).** When resumed:
+`pnpm exec cap add ios` in `apps/shell`, set the iOS 16.0 deployment target and portrait
+lock in Xcode (General › Deployment Info), then decide whether to commit `ios/` as D15
+did for Android.
+
+Set the RevenueCat keys and API base before `build` for store builds (see
+`apps/shell/.env.example`). Never set `VITE_ALLOW_DEV_PURCHASES` for a store build.
 
 ## 2. Device checklist (M2-T5; repeat for every release)
 

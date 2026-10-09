@@ -7,6 +7,6 @@ and no third-party assets.
 
 | Asset | Source | License |
 |---|---|---|
-| All visuals | Drawn in code (`src/index.ts`) | Project's own |
+| All visuals | Drawn in code (`src/draw.ts`, `src/controller.ts`) | Project's own |
 | All sounds | Synthesized by the shell (`ctx.audio`) | Project's own |
 | Fonts | System UI font stack | n/a (not bundled) |

@@ -27,7 +27,7 @@ export interface GameModule {
 
 export interface GameContext {
   storage: ScopedStorage;                     // namespaced "game:<slug>:"
-  audio: AudioFacade;                         // no-ops when sound/music disabled
+  audio: AudioFacade;                         // play(sfx, { pitch?, volume? }); no-op when sound is off
   haptics: { impact(style: "light" | "medium" | "heavy"): void };
   viewport: { width: number; height: number; safeArea: Insets; onResize(cb: () => void): () => void };
   prefersReducedMotion: boolean;
@@ -40,6 +40,29 @@ export interface ScopedStorage {
   remove(key: string): Promise<void>;
 }
 ```
+
+`Sfx` is a closed set of synthesized effects (`SFX_NAMES` in the SDK: tap, select, move,
+drop, pop, bump, whoosh, success, combo, perfect, star, unlock, fail, win). `pitch` is a
+multiplier the host clamps to 0.5–3 (games raise it for combos); `volume` is 0–1. The
+host synthesizes every effect with WebAudio (`apps/shell/src/host/audio.ts`), so games
+ship no audio files.
+
+**Game kit (Roadmap D13).** Games normally do not implement `GameModule` by hand. The SDK
+provides `createLevelGame` (numbered levels with 1–3 stars, a level map, win/stuck cards)
+and `createRunGame` (endless runs with a best score) in `packages/game-sdk/src/kit.ts`, plus
+effects in `juice.ts` (tweens, particles, screen shake, floating text). A game supplies a
+controller with its rules, drawing and touch handling. Both shells store one value under
+the scoped key `progress`:
+
+```ts
+interface LevelProgress { currentLevel: number; bestLevel: number; stars: number[] } // stars[i] ∈ 0..3
+interface RunProgress { best: number; runs: number }
+```
+
+Saves without `stars` (pre-kit) load with one star per cleared level. The shell reads
+these values read-only to show a progress line on library tiles
+(`apps/shell/src/services/progress.ts`). `createRunGame` reports each finished run through
+`events.levelComplete(runNumber)`.
 
 **Lifecycle rules (conformance test asserts these):**
 

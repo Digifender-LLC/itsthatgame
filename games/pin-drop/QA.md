@@ -1,13 +1,16 @@
 # QA checklist: Pin Drop
 
-Status as of 2026-10-04. Automated items were run in this repository; device items have not been run.
+Status as of 2026-10-05. Automated items were run in this repository; device items have not been run.
 
 ## Automated
 
 - [x] SDK conformance suite (`describeConformance`, `src/index.test.ts`): lifecycle, no leaked timers, frames, listeners or DOM, scoped storage only, no network.
 - [x] Rules, win/lose, undo and restart tests (`src/logic.test.ts`).
-- [x] Level solvability: every level is solved by the solver in `src/logic.ts` and the solution is replayed (`src/logic.test.ts`).
-- [x] Shell behavior: resume from saved progress, level completion event, progress saved (`src/ui.test.ts`).
+- [x] Level solvability: all 50 levels are regenerated from their recorded plan, solved by breadth-first search, replayed, and their par equals the shortest solution (`src/logic.test.ts`).
+- [x] Mechanics: lava (burn, cool by rock), gates and sensors (two channels), coloured cups, gauge counts (`src/logic.test.ts`).
+- [x] Worlds, intro banners and per-world mechanics present (`src/logic.test.ts`).
+- [x] Play-through by pointer events: tap, swipe, resume, stars saved, animated pull (`src/play.test.ts`).
+- [x] Screenshots reviewed at 390x844: level 1, mid-animation splash, win card, levels 11, 21 and 50 (dev preview, not a device).
 - [x] Typecheck, ESLint (no network or storage globals in games), Prettier.
 
 ## Accessibility (NFR-4)
@@ -29,3 +32,10 @@ Status as of 2026-10-04. Automated items were run in this repository; device ite
 - [ ] Frame rate and load time (NFR-2): pending device testing (Roadmap P4)
 - [ ] Background/foreground (pause/resume) in the real shell: pending device testing (Roadmap P4)
 - [ ] Sound and haptics feel: pending device testing (Roadmap P4)
+
+## Feel checklist (not run on a device)
+
+- [ ] Pin pull recoil and whoosh, landing squash and plink pitch variation feel right on a phone.
+- [ ] Rising chime counts up with the cup (3/5), cup fill gauge reads at arm's length.
+- [ ] Swipe-to-pull does not trigger by accident when aiming at a pin.
+- [ ] Longest board (4 tiers, 18 rows) keeps 60 fps and readable cells at 360 px wide.

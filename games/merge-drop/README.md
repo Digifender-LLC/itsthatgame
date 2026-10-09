@@ -32,17 +32,35 @@ used; the merge rules, name, look, and audio are our own (see `ORIGINALITY.md`).
 
 ## Controls
 
-- Touch or move over the board to aim a column (it highlights and the current tile follows),
-  release to drop. A plain tap on a column drops there. Restart is a 92x44 button.
-- Banner shows points and chain length after a merge.
+- Press anywhere in the play area and drag horizontally to aim: the held tile glides over the
+  column, the column highlights, a ghost tile shows where it will land (dashed outline when it
+  will merge). Release to drop. A plain tap on a column drops there. The touch that starts a
+  run only starts it. One drop made during an animation is buffered and runs when it ends.
+- The shell supplies the HUD (back, restart), score pop, best score and game-over card.
+
+## Feel
+
+Tiles fall with acceleration and land with a squash; merges slide the group into the merge
+cell, the result pops with an elastic scale, with star particles in the tile colour, a floating
+"+64" and "Chain x3!"; the merge sound's pitch rises with each chain step. Tiles have their own
+colour per value plus a glyph (small values) and growing decoration: ring (16+), corner gems
+(64+), double ring and sparkle (256+), gold rim and crown (1024+). Columns two rows from the
+top show moving danger stripes, and pulse red with a bar when one tile from overflow.
+
+## Progress inside and across runs
+
+- Goal ladder 32, 64, 128 ... 16384 (`GOALS` in `src/logic.ts`): the top bar shows a window of
+  five goals with a progress bar to the next one, and the HUD line reads `Top 16 -> 32`.
+  Each new highest tile on the ladder plays the unlock sound, bursts stars and shows a banner;
+  128 and above add confetti, a heavier haptic and the star sound.
+- Difficulty ramp: the spawn pool grows with the biggest tile (see rule 4), so runs get
+  tenser as they go. Best score and run count are saved by the shell (`progress`).
 
 ## Persistence and analytics
 
-- `ctx.storage` keys: `best`, `runs` (run counter used as the seed source), `game` (the
-  full game snapshot, saved after every drop and removed when the run ends). The game
-  resumes the unfinished run on relaunch.
-- `ctx.events.levelComplete(n)` is called when a run ends, with `n` = the run number.
+- The shell saves `{ best, runs }` under the `progress` key. A run is not resumed after the
+  app closes (the old `game` snapshot is gone with the private shell). Seeds vary per run.
 
 ## Level plan
 
-Endless; difficulty comes from the larger tiles that start to spawn as the board develops.
+Endless, with the goal ladder as milestones.

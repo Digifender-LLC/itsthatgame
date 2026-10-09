@@ -9,6 +9,5 @@ coverage/
 playwright-report/
 test-results/
 .DS_Store
-apps/shell/android/
 apps/shell/ios/
 !.env.example

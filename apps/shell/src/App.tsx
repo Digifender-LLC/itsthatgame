@@ -4,7 +4,14 @@ import { GAME_MODULES, isNew, seenKey, type CatalogGame } from "./catalog";
 import { APP_VERSION } from "./config";
 import { createAudio } from "./host/audio";
 import type { HostDeps } from "./host/gameHost";
-import { hapticImpact, onAppActive, onNetworkOnline, prefersReducedMotion } from "./platform";
+import {
+  exitApp,
+  hapticImpact,
+  onAppActive,
+  onBackButton,
+  onNetworkOnline,
+  prefersReducedMotion,
+} from "./platform";
 import { GameError, GameScreen } from "./screens/GameScreen";
 import { Library } from "./screens/Library";
 import { MyRequests } from "./screens/MyRequests";
@@ -14,6 +21,7 @@ import { Settings } from "./screens/Settings";
 import type { AppServices } from "./services/bootstrap";
 import { isEntitled } from "./services/entitlementMachine";
 import { saveSettings, type Settings as SettingsValues } from "./services/prefs";
+import { loadProgressSummaries } from "./services/progress";
 
 type Route =
   | { name: "library" }
@@ -36,6 +44,7 @@ export function App({ services }: { services: AppServices }) {
   const [settings, setSettings] = useState(services.settings);
   const [seen, setSeen] = useState(services.seen);
   const [notice, setNotice] = useState<string | null>(null);
+  const [progress, setProgress] = useState<Record<string, string>>({});
   useSubscription(entitlement);
   useSubscription(outbox);
 
@@ -61,6 +70,36 @@ export function App({ services }: { services: AppServices }) {
       offOnline();
     };
   }, []);
+
+  // Refresh tile progress lines whenever the library is shown (e.g. after playing).
+  useEffect(() => {
+    if (route.name !== "library") return;
+    let live = true;
+    void loadProgressSummaries(
+      kv,
+      games.map((g) => g.slug),
+    ).then((p) => live && setProgress(p));
+    return () => {
+      live = false;
+    };
+  }, [route.name]);
+
+  // Android back: leave the game (through its host, so exit is tracked), close the
+  // current screen, or leave the app from the library.
+  const routeRef = useRef(route);
+  routeRef.current = route;
+  const gameBack = useRef<(() => void) | null>(null);
+  useEffect(
+    () =>
+      onBackButton(() => {
+        const r = routeRef.current;
+        if (r.name === "library") exitApp();
+        else if (r.name === "game") gameBack.current?.();
+        else if (r.name === "paywall") go({ name: r.back });
+        else go({ name: "library" });
+      }),
+    [],
+  );
 
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -120,6 +159,7 @@ export function App({ services }: { services: AppServices }) {
           onOpen={openGame}
           onSettings={() => go({ name: "settings" })}
           onRequest={() => go({ name: "request" })}
+          progress={progress}
           notice={notice}
         />
       );
@@ -133,6 +173,7 @@ export function App({ services }: { services: AppServices }) {
           load={load}
           deps={hostDeps}
           onExit={() => go({ name: "library" })}
+          backRef={gameBack}
           onFailure={() => setRoute({ name: "gameError", game: route.game })}
         />
       );

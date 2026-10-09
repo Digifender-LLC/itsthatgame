@@ -11,7 +11,7 @@ describe("paint-path input and persistence", () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
     const ctx = fakeContext(SLUG);
-    await ctx.storage.set("progress", { currentLevel: 4, bestLevel: 4 });
+    await ctx.storage.set("progress", { currentLevel: 41, bestLevel: 40, stars: [] });
     const game = factory();
     await game.mount(container, ctx);
     game.start();

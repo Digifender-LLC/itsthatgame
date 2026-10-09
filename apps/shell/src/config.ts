@@ -10,6 +10,9 @@ export const API_BASE: string = (env.VITE_API_BASE || "http://127.0.0.1:8787").r
 export const RC_IOS_KEY: string = env.VITE_RC_IOS_KEY ?? "";
 export const RC_ANDROID_KEY: string = env.VITE_RC_ANDROID_KEY ?? "";
 
+/** Debug/sideload builds only: use the no-charge DevAdapter on native (Roadmap D16). */
+export const ALLOW_DEV_PURCHASES: boolean = env.VITE_ALLOW_DEV_PURCHASES === "1";
+
 /** The single RevenueCat entitlement every product grants (ADR-0005, SDD §4). */
 export const ENTITLEMENT_ID = "full_library";
 

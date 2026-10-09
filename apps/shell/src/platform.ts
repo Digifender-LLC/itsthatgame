@@ -68,3 +68,26 @@ export function hapticImpact(style: "light" | "medium" | "heavy"): void {
 export function prefersReducedMotion(): boolean {
   return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
+
+/**
+ * Android hardware/gesture back (native only). While a listener is registered Capacitor
+ * stops its default handling, so the callback decides what back means.
+ */
+export function onBackButton(cb: () => void): () => void {
+  if (!Capacitor.isNativePlatform()) return () => {};
+  let remove: (() => void) | null = null;
+  let disposed = false;
+  void App.addListener("backButton", () => cb()).then((h) => {
+    if (disposed) void h.remove();
+    else remove = () => void h.remove();
+  });
+  return () => {
+    disposed = true;
+    remove?.();
+  };
+}
+
+/** Leave the app (Android back on the library screen). */
+export function exitApp(): void {
+  if (Capacitor.isNativePlatform()) void App.exitApp().catch(() => undefined);
+}

@@ -54,7 +54,13 @@ export function installFakeCanvas(): void {
   proto.getContext = function () {
     const noop = () => {};
     return new Proxy(
-      { canvas: this, measureText: () => ({ width: 10 }) } as Record<string, unknown>,
+      {
+        canvas: this,
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: noop }),
+        createRadialGradient: () => ({ addColorStop: noop }),
+        getTransform: () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }),
+      } as Record<string, unknown>,
       {
         get(target, prop) {
           if (prop in target) return target[prop as string];

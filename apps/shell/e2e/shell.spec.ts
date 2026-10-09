@@ -33,10 +33,20 @@ test("library shows 8 games with 5 locked", async ({ page }) => {
 test("a free game launches into a canvas and Exit returns to the library", async ({ page }) => {
   await page.getByRole("button", { name: /^Ring Sort/ }).click();
   await expect(page.locator(".game-container canvas")).toBeVisible();
-  await page.getByRole("button", { name: "Exit Ring Sort" }).click();
+  // The shell's Exit button is keyboard-only (games draw their own back button).
+  await page.getByRole("button", { name: "Exit Ring Sort" }).press("Enter");
   await expect(tiles(page)).toHaveCount(8);
   // RULE-12: opened games lose their New badge.
   await expect(page.getByRole("button", { name: "Ring Sort" })).toBeVisible();
+});
+
+test("the back button drawn in the game's HUD returns to the library", async ({ page }) => {
+  await page.getByRole("button", { name: /^Pin Drop/ }).click();
+  const canvas = page.locator(".game-container canvas");
+  await expect(canvas).toBeVisible();
+  await page.waitForTimeout(300);
+  await canvas.click({ position: { x: 30, y: 30 } });
+  await expect(tiles(page)).toHaveCount(8);
 });
 
 test("tapping a locked game opens the paywall with store prices and links", async ({ page }) => {

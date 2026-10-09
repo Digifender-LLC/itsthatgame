@@ -4,32 +4,55 @@ Design note for the `pin-drop` game package. Part of the free tier (roadmap M2/M
 
 ## Mechanic
 
-A grid of chambers separated by removable pins. Tap a pin to pull it; the contents then fall, tick by tick, under a fixed gravity rule (balls fall one cell per tick; slide cells push sideways; walls, unpulled pins and other balls block). Colored balls must end up in the goal cup. Grey rocks must stay out: a rock that reaches the cup loses, and a rock that touches (is orthogonally adjacent to) a colored ball destroys it and loses. Running out of pins with colored balls still on the board also loses. The model is a deterministic grid, with no physics engine.
+A tall board of chambers separated by brass pins. Pull a pin (tap it, or swipe along it) and whatever rests on it falls, tick by tick, under a fixed gravity rule: balls fall one cell per tick, slides push sideways, and walls, unpulled pins, closed gates and other balls block. The goal is to get every ball into its cup. The model is a deterministic grid (`src/logic.ts`, pure and tested), with no physics engine; `src/index.ts` only animates it.
+
+Rules (see the header of `logic.ts`):
+
+- A ball that enters a cup is collected. A rock that enters a cup loses.
+- A rock touching a ball (orthogonally, after any tick) destroys it and loses.
+- Running out of pins with balls still on the board loses.
+- **Lava** burns any ball that enters it (lose), but a rock that falls in cools it for good (the rock is used up and the cell becomes empty space).
+- **Gates** (`G`) block like walls until any ball enters a **sensor pad** (`s`); then they stay open.
+- **Coloured cups** (`A` `B`) only take balls of their own colour class (`a` `b`); a ball in the wrong cup loses. Colour classes also carry a glyph (circle, triangle, square) so colour is never the only cue.
 
 ## Inspiration (genre / ad format only)
 
-The generic 'pull the pin to release things' puzzle format seen in mobile ads. Only the idea of ordering pin pulls is used; the hopper/slide/cup design, the rock rule and all visuals are our own.
+The generic "pull the pin to release things" puzzle format seen in mobile ads. Only the idea of ordering pin pulls is used; the hopper/slide/cup design, the rock, lava, gate and coloured-cup rules, and all visuals are our own.
 
-## Level plan
+## Levels and worlds (50)
 
-24 levels from a seeded 'tiered hopper' generator (src/levels.ts): levels 1 to 8 have two tiers (3 pins), levels 9 to 24 have three tiers (5 pins). The verified seed is recorded per level. An exhaustive analyzer rates each level (fraction of winning pin orders, fewest pulls). Levels 1 and 3 are intentionally forgiving (every order wins) and serve as the tutorial; every later level has losing orders. logic.test.ts re-solves all levels.
+| World | Levels | New element (intro banner on its first level) |
+|---|---|---|
+| The Workshop | 1-10 | Pins, slides, cup (L1); several pins and an order (L2); grey rocks (L6) |
+| Lava Lab | 11-20 | Lava that must be cooled by a rock (L11) |
+| Trapdoors | 21-30 | Gates opened by a sensor pad (L21) |
+| Rainbow Cups | 31-40 | Two coloured cups (L31) |
+| The Grand Machine | 41-50 | Combinations: coloured cups with lava or gates, up to 4 tiers (L41) |
 
-Progress is stored through `ctx.storage` as `{currentLevel, bestLevel}` (1-based) under the key `progress`, and the game resumes at `currentLevel` on mount. Finishing a level calls `ctx.events.levelComplete(n)`.
+Levels come from a seeded generator over a "tiered hopper" family (`src/generator.ts`, an offline tool). The committed data (`src/levelData.ts`) records each level's plan (including the seed) and its par. `logic.test.ts` re-generates every level from its plan, solves it by breadth-first search over pin orders, checks that the par equals the shortest solution, that no level starts lost, that the right mechanic appears in each world, and that every level from World 1's rock levels on has losing orders as well as winning ones.
+
+## Stars
+
+Par is the fewest pins in any winning order (from the solver). The HUD shows `Pins <pulled> · par <n> · Cup <in>/<total>`.
+
+- 3 stars: at most par pins and at most one do-over (undo, restart or a lost try).
+- 2 stars: at most one pin over par with no do-overs, or a few do-overs (penalty = 2 x extra pins + do-overs, 2 stars up to 4).
+- 1 star: any win.
+
+Because some levels have optional or decoy pins, pulling pins you do not need costs stars. Progress is saved by the kit under `progress` (`currentLevel`, `bestLevel`, `stars[]`).
 
 ## Controls
 
-Tap a pin (the hit area is larger than the drawn pin, at least 30 px). HUD: Back, Undo, Restart.
+Tap a pin, or put a finger on it and swipe (14 px) to pull it. The hit area is the whole rod, the ring handle and a band of at least 44 px around it; the nearest pin wins. Tapping during an animation fast-forwards it (4x). HUD (kit): Back, level map, hint (highlights the next pin of a shortest solution from the current position), Undo, Restart.
 
 ## Look and feel
 
-Light paper board with slate walls, pale-blue slides with chevron arrows, yellow ring-handle pins, a green bucket-shaped cup, colored glyph balls, and angular grey rocks marked with an X.
+Dark slate workshop: bevelled stone walls, pale-blue ramps with chevrons, brass rods with ring handles (idle sway and shine), glossy glyph balls with soft shadows, angular grey rocks marked with an X, a glass cup that visibly fills and shows `n/need`, animated lava with hazard hatching, amber/violet gates and pads with different shapes.
 
-Animation: Short per-tick tween (90 ms per tick) of falling balls, pin fade, cup shrink and crush ring; skipped when prefersReducedMotion is set.
+Juice: the pin recoils then whooshes out and fades; balls fall with eased motion and a slight stretch, squash and hop on landing with a plink whose pitch depends on the column (rocks thud lower with dust); each ball into the cup splashes colour particles, pulses the cup, floats `3/5` and plays a rising-pitch chime; the last ball adds a star burst and the kit confetti; rocks touching balls give a dust puff, ring, shake and a low bump; lava gives sparks, rocks cooling give steam and a hiss; gates unlock with sparks. Reduced motion skips all tweens (results are applied instantly, sounds still play).
 
 ## Implementation notes
 
-- Files: src/logic.ts (model, solver, analyzer), src/levels.ts (generator + plan), src/index.ts (rendering, input), src/shell.ts (shared HUD/lifecycle).
-- `src/logic.ts` is pure TypeScript with no DOM access; `src/index.ts` draws with plain Canvas 2D through the SDK helpers.
-- `src/shell.ts` is a copy of the same small shell in the other free games (lifecycle, HUD, overlay, progress). It is duplicated on purpose because games import only from `@itg/game-sdk`.
-- Sounds are requested only through `ctx.audio.play` (`tap`, `move`, `pop`, `success`, `fail`, `win`); haptics through `ctx.haptics`.
-- Touch targets: HUD buttons are 44 px high; board targets are described under Controls.
+- Files: `src/logic.ts` (model, solver, analyzer), `src/generator.ts` (offline level generator), `src/levelData.ts` (committed levels), `src/levels.ts` (worlds, intros, par), `src/index.ts` (controller: drawing, input, effects) built on `createLevelGame` from `@itg/game-sdk`.
+- Tests: `logic.test.ts` (rules, solver, level checks), `play.test.ts` (play-through by pointer events, swipe, resume), `index.test.ts` (SDK conformance).
+- Sounds are requested through `env.audio` only; haptics through `env.haptics`.
